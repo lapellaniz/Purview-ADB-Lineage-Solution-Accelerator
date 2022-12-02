@@ -129,19 +129,35 @@ The below spark configuration needs to be created and attached to the Spark Pool
 | spark.openlineage.namespace                     | {synapse workspace name},azuresynapsespark                   |
 | spark.openlineage.url.param.code                | {Azure Function Code Secret}                                |
 
-The spark.openlineage.namespace needs to of the format {synapse workspace name},azuresynapsespark. "azuresynapsespark" is needed to disambiguate between Azure Databricks and Azure Synapse Spark Pools.
+    The spark.openlineage.namespace needs to of the format {synapse workspace name},azuresynapsespark. "azuresynapsespark" is needed to disambiguate between Azure Databricks and Azure Synapse Spark Pools.
 
 ![sparkconfiguration.png](./assets/img/readme/sparkconfiguration.png)
 
-Spark Properties, Related Notebooks and Lineage can be viewed as shown below. 
-
-![sparkproperties.png](./assets/img/readme/sparkproperties.png)
-
-![sparkprocessrelated.png](./assets/img/readme/sparkprocessrelated.png)
-
-![sparkprocesslineage.png](./assets/img/readme/sparkprocesslineage.png)
 
 
+### Create Azure Synapse Spark typedefs in Purview
+
+Microsoft Purview does have the Entity and Relationship typedefs for Azure Synpase Spark Notebooks. The typedefs can be created using the script below. 
+
+1. Update the variables in the assets/purviewassets/create-purview-typedefs-relationship.sh file. 
+
+        tenantId="<>"
+        clientId="<>"
+        clientSecret="<>"
+        scope="<>"
+        purviewname="<>"
+
+2. Execute the script
+
+        assets/purviewassets/create-purview-typedefs-relationship.sh
+
+3. Execute Spark Notebook to populate Purview with Spark lineage. Spark Properties, Related Notebooks and Lineage can be viewed as shown below. 
+
+    ![sparkproperties.png](./assets/img/readme/sparkproperties.png)
+
+    ![sparkprocessrelated.png](./assets/img/readme/sparkprocessrelated.png)
+
+    ![sparkprocesslineage.png](./assets/img/readme/sparkprocesslineage.png)
 
 ## Troubleshooting
 

@@ -1,0 +1,143 @@
+{
+  "entityDefs":[  
+    {
+        "category": "ENTITY",
+        "version": 1, 
+        "name": "azure_synapse_notebook",
+        "description": "azure_synapse_notebook",
+        "typeVersion": "1.0",
+        "serviceType": "Azure Synapse Analytics",
+        "options": {
+            "derivedLineageSources": "[\"processes\"]",
+            "purviewEntityExtDef": "{\"qualifiedNamePattern\":\"synapse://(?<Workspace>[^/]+)/authoring/analyze/notebooks/(?<Notebook>([^/]+/)*[^/]+)$\",\"qualifiedNameSample\":\"synapse://synapseworkspacename.dev.azuresynapse.net/authoring/analyze/notebooks/spark_lineage_copy1\",\"isContainer\":false,\"friendlyName\":\"Synapse notebook\",\"search\":{\"searchBehavior\":\"StandardSearch\",\"standardSearch\":{\"taxonomy\":{\"source\":\"QualifiedName\",\"assetTaxonomy\":[\"Workspace\"]},\"browse\":{\"source\":\"QualifiedName\",\"browseHierarchy\":[{\"entityTypeName\":\"azure_synapse_workspace\",\"isPath\":false,\"isRequired\":true,\"componentName\":\"Workspace\"},{\"entityTypeName\":\"azure_synapse_notebook\",\"isPath\":false,\"isRequired\":true,\"componentName\":\"Notebook\"}]}}}}"
+        },
+        "lastModifiedTS": "1",
+        "attributeDefs": [
+            {
+                "name": "sparkPoolName",
+                "typeName": "string",
+                "isOptional": true,
+                "cardinality": "SINGLE",
+                "valuesMinCount": 0,
+                "valuesMaxCount": 1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false
+            },
+            {
+                "name": "user",
+                "typeName": "string",
+                "isOptional": true,
+                "cardinality": "SINGLE",
+                "valuesMinCount": 0,
+                "valuesMaxCount": 1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false
+            },
+            {
+                "name": "sparkVersion",
+                "typeName": "string",
+                "isOptional": true,
+                "cardinality": "SINGLE",
+                "valuesMinCount": 0,
+                "valuesMaxCount": 1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false
+            }
+        ],
+        "superTypes": [
+            "Process"
+        ],
+        "subTypes": [],
+        "relationshipAttributeDefs": [
+            {
+                "name": "represents",
+                "typeName": "Purview_DataDomain",
+                "isOptional": true,
+                "cardinality": "SINGLE",
+                "valuesMinCount": -1,
+                "valuesMaxCount": -1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false,
+                "relationshipTypeName": "Purview_Assets_DataDomain_Represents",
+                "isLegacyAttribute": false
+            },
+            {
+                "name": "outputs",
+                "typeName": "array<DataSet>",
+                "isOptional": true,
+                "cardinality": "SET",
+                "valuesMinCount": 0,
+                "valuesMaxCount": 2147483647,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false,
+                "relationshipTypeName": "process_dataset_outputs",
+                "isLegacyAttribute": true
+            },
+            {
+                "name": "azure_synapse_workspace",
+                "typeName": "azure_synapse_workspace",
+                "isOptional": false,
+                "cardinality": "SINGLE",
+                "valuesMinCount": -1,
+                "valuesMaxCount": -1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false,
+                "relationshipTypeName": "azure_synapse_workspace_notebook",
+                "isLegacyAttribute": false
+            },
+            {
+                "name": "processes",
+                "typeName": "array<azure_synapse_process>",
+                "isOptional": true,
+                "cardinality": "SET",
+                "valuesMinCount": -1,
+                "valuesMaxCount": -1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false,
+                "constraints": [
+                    {
+                        "type": "ownedRef"
+                    }
+                ],
+                "relationshipTypeName": "azure_synapse_notebook_process",
+                "isLegacyAttribute": false
+            },
+            {
+                "name": "inputs",
+                "typeName": "array<DataSet>",
+                "isOptional": true,
+                "cardinality": "SET",
+                "valuesMinCount": 0,
+                "valuesMaxCount": 2147483647,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false,
+                "relationshipTypeName": "dataset_process_inputs",
+                "isLegacyAttribute": true
+            },
+            {
+                "name": "meanings",
+                "typeName": "array<AtlasGlossaryTerm>",
+                "isOptional": true,
+                "cardinality": "SET",
+                "valuesMinCount": -1,
+                "valuesMaxCount": -1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false,
+                "relationshipTypeName": "AtlasGlossarySemanticAssignment",
+                "isLegacyAttribute": false
+            }
+        
+        ],
+        "businessAttributeDefs": {}
+    }
+]
+}

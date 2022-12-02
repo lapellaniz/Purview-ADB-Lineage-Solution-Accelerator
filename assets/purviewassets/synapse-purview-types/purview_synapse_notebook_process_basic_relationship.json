@@ -1,0 +1,33 @@
+{
+    "relationshipDefs": [
+    
+    {
+        "category": "RELATIONSHIP",
+        "createdBy": "admin",
+        "updatedBy": "admin",
+        "version": 1,
+        "name": "azure_synapse_notebook_process",
+        "description": "azure_synapse_notebook_process",
+        "typeVersion": "1.0",
+        "serviceType": "Azure Synapse Analytics Spark",
+        "lastModifiedTS": "1",
+        "attributeDefs": [],
+        "relationshipCategory": "COMPOSITION",
+        "propagateTags": "NONE",
+        "endDef1": {
+            "type": "azure_synapse_notebook",
+            "name": "processes",
+            "isContainer": true,
+            "cardinality": "SET",
+            "isLegacyAttribute": false
+        },
+        "endDef2": {
+            "type": "Process",
+            "name": "notebook",
+            "isContainer": false,
+            "cardinality": "SINGLE",
+            "isLegacyAttribute": false
+        }
+    }
+    ]
+}

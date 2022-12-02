@@ -1,0 +1,33 @@
+{
+    "relationshipDefs": [
+    {
+        "category": "RELATIONSHIP",
+        "createdBy": "admin",
+        "updatedBy": "admin",
+        "version": 1,
+        "name": "azure_synapse_workspace_notebook",
+        "description": "azure_synapse_workspace_notebook",
+        "typeVersion": "1.0",
+        "serviceType": "Azure Synapse Analytics",
+        "lastModifiedTS": "1",
+        "attributeDefs": [],
+        "relationshipCategory": "COMPOSITION",
+        "propagateTags": "NONE",
+        "endDef1": {
+            "type": "azure_synapse_workspace",
+            "name": "notebooks",
+            "isContainer": true,
+            "cardinality": "SET",
+            "isLegacyAttribute": false
+        },
+        "endDef2": {
+            "type": "azure_synapse_notebook",
+            "name": "workspace",
+            "isContainer": false,
+            "cardinality": "SINGLE",
+            "isLegacyAttribute": false
+        }
+    }
+    
+    ]
+}
