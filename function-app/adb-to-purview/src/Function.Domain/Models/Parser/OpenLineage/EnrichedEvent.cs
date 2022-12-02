@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Function.Domain.Models.Adb;
+using Function.Domain.Models.SynapseSpark;
 
 namespace Function.Domain.Models.OL
 {
@@ -15,6 +16,24 @@ namespace Function.Domain.Models.OL
             OlEvent = olEvent;
             AdbRoot = adbRoot;
             AdbParentRoot = adbParentRoot;
+        }
+    }
+
+
+
+    public class EnrichedSynapseEvent
+    {
+        public Event? OlEvent = null;
+        public SynapseRoot? SynapseRoot = null;
+
+        public SynapseSparkPool? SynapseSparkPool = null;
+
+        public EnrichedSynapseEvent(Event olEvent, SynapseRoot? synapseRoot, SynapseSparkPool? synapseSparkPool)
+        {
+            OlEvent = olEvent;
+            SynapseRoot = synapseRoot;
+            SynapseSparkPool = synapseSparkPool;
+            
         }
     }
 }

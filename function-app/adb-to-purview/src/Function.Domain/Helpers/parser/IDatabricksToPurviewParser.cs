@@ -1,5 +1,7 @@
 using Function.Domain.Models.Purview;
 using Function.Domain.Models.Adb;
+using Function.Domain.Models.SynapseSpark;
+using Function.Domain.Models.OL;
 
 namespace Function.Domain.Helpers
 {
@@ -14,5 +16,17 @@ namespace Function.Domain.Helpers
         public DatabricksSparkJarTask GetDatabricksSparkJarTask(string jobQn);
         public DatabricksProcess GetDatabricksProcess(string taskQn);
         public JobType GetJobType();
+    }
+
+
+    public interface ISynapseToPurviewParser
+    {
+        public SynapseWorkspace GetSynapseWorkspace();
+
+        public SynapseNotebook GetSynapseNotebook(string workspaceQn);
+
+        public SynapseProcess GetSynapseProcess(string sparkNotebookQn, SynapseNotebook synapseNotebook);
+        
+        //public SynapseProcess GetSynapseProcess(string taskQn);
     }
 }

@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 using Function.Domain.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Function.Domain.Models.SynapseSpark;
+using Function.Domain.Providers;
+using System.Linq;
 
 namespace Function.Domain.Services
 {
@@ -21,6 +24,7 @@ namespace Function.Domain.Services
         const string PREFIX = "{\"entities\": [";
         const string SUFFIX = "]}";
         private IConfiguration _config;
+        private ISynapseClientProvider _synapseClientProvider;
 
         /// <summary>
         /// Constructs the OlToPurviewParsingService from the Function framework using DI
@@ -32,6 +36,7 @@ namespace Function.Domain.Services
             _logger = loggerFactory.CreateLogger<OlToPurviewParsingService>();
             _loggerFactory = loggerFactory;
             _config = config;
+            _synapseClientProvider = new SynapseClientProvider(loggerFactory, _config);
         }
         
         /// <summary>
@@ -61,6 +66,76 @@ namespace Function.Domain.Services
             {
                 return ParseJobTask(parser);
             }
+        }
+
+        public string? GetParentEntity(Event eventData)
+        {
+             if (eventData == null)
+            {
+                return null;
+            }
+
+            SynapseRoot? synapseRoot = GetSynapseJob(eventData);
+            SynapseSparkPool? synapseSparkPool = GetSynapseSparkPool(eventData);
+            EnrichedSynapseEvent enrichedEventData = new EnrichedSynapseEvent(eventData, synapseRoot, synapseSparkPool);
+           
+            ISynapseToPurviewParser parser = new SynapseToPurviewParser(_loggerFactory, _config, enrichedEventData);
+            SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
+            SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);            
+            //SynapseProcess synapseProcess = parser.GetSynapseProcess(synapseNotebook.Attributes.QualifiedName, synapseNotebook);
+
+            var synapseWorkspaceStr = JsonConvert.SerializeObject(synapseWorkspace);
+            var synapseNotebookStr = JsonConvert.SerializeObject(synapseNotebook);
+            //var synapseProcessStr = JsonConvert.SerializeObject(synapseProcess);
+
+            //return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr},{synapseProcessStr}{SUFFIX}";
+            //return $"{PREFIX}{synapseWorkspaceStr},{synapseProcessStr}{SUFFIX}";
+            return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr}{SUFFIX}";
+        }
+
+        public string? GetChildEntity(Event eventData)
+        {
+             if (eventData == null)
+            {
+                return null;
+            }
+
+            SynapseRoot? synapseRoot = GetSynapseJob(eventData);
+            SynapseSparkPool? synapseSparkPool = GetSynapseSparkPool(eventData);
+            EnrichedSynapseEvent enrichedEventData = new EnrichedSynapseEvent(eventData, synapseRoot, synapseSparkPool);
+           
+            ISynapseToPurviewParser parser = new SynapseToPurviewParser(_loggerFactory, _config, enrichedEventData);
+            SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
+            SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);            
+            SynapseProcess synapseProcess = parser.GetSynapseProcess(synapseNotebook.Attributes.QualifiedName, synapseNotebook);
+
+            //var synapseWorkspaceStr = JsonConvert.SerializeObject(synapseWorkspace);
+            //var synapseNotebookStr = JsonConvert.SerializeObject(synapseNotebook);
+            var synapseProcessStr = JsonConvert.SerializeObject(synapseProcess);
+
+            //return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr},{synapseProcessStr}{SUFFIX}";
+            //return $"{PREFIX}{synapseWorkspaceStr},{synapseProcessStr}{SUFFIX}";
+            //return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr}{SUFFIX}";
+            return $"{PREFIX}{synapseProcessStr}{SUFFIX}";
+        }
+        
+        private SynapseRoot? GetSynapseJob(Event eEvent)
+        {
+            string runId = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length-1];
+            SynapseRoot? synapseRootResult = null;
+            synapseRootResult = _synapseClientProvider.GetSynapseJobAsync(long.Parse(runId), eEvent.Job.Namespace.Split(",")[0]).GetAwaiter().GetResult();
+            return synapseRootResult;
+        }
+
+        private SynapseSparkPool? GetSynapseSparkPool(Event eEvent)
+        {
+            string runId = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length-1];
+            string sparkjobname = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length-1];
+            string sparkNoteBookName = eEvent.Job.Name.Substring(0,eEvent.Job.Name.IndexOf(sparkjobname) - 1);
+            string sparkClusterName = sparkNoteBookName.Split("_").Last();
+            SynapseSparkPool? synapseSparkPoolResult = null;
+            synapseSparkPoolResult = _synapseClientProvider.GetSynapseSparkPoolsAsync(eEvent.Job.Namespace.Split(",")[0], sparkClusterName).GetAwaiter().GetResult();
+            return synapseSparkPoolResult;
         }
 
         private string ParseInteractiveNotebook(IDatabricksToPurviewParser parser)

@@ -7,4 +7,9 @@ namespace Function.Domain.Models.Purview
         public RelationshipAttribute Task = new RelationshipAttribute();
     }
 
+     public class SynapseProcessRelationshipAttributes
+    {
+        [JsonProperty("notebook")]
+        public RelationshipAttribute Notebook = new RelationshipAttribute();
+    }
 }

@@ -98,10 +98,10 @@ namespace Function.Domain.Helpers
             {
                 return null;
             }
-            if (RunIdProcessed(jobRunId))
-            {
-                return null;
-            }
+            //if (RunIdProcessed(jobRunId))
+            //{
+            //    return null;
+            //}
             if (await JoinEventData(olEvent, jobRunId))
             {
                 return olEvent;

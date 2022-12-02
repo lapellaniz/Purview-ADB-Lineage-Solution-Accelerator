@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Function.Domain.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Function.Domain.Models.OL;
 
 namespace AdbToPurview.Function
 {
@@ -16,6 +17,7 @@ namespace AdbToPurview.Function
         private readonly IOlToPurviewParsingService _olToPurviewParsingService;
         private readonly IPurviewIngestion _purviewIngestion;
 
+        private Event _event = new Event();
         public PurviewOut(ILogger<PurviewOut> logger, IOlToPurviewParsingService olToPurviewParsingService, IPurviewIngestion purviewIngestion, IOlConsolodateEnrich olConsolodateEnrich, ILoggerFactory loggerFactory)
         {
             logger.LogInformation("Enter PurviewOut");
@@ -33,23 +35,47 @@ namespace AdbToPurview.Function
             [EventHubTrigger("%EventHubName%", IsBatched = false ,Connection = "ListenToMessagesFromEventHub", ConsumerGroup = "%EventHubConsumerGroup%")] string input)
         {
             try{
-                var enrichedEvent = await _olConsolodateEnrich.ProcessOlMessage(input);
-                if (enrichedEvent == null)
-                {
-                    _logger.LogInformation($"Start event, duplicate event, or no context found - eventData: {input}");
-                    return "";
-                }
-                var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent);
-                if (purviewEvent == null)
-                {
-                    _logger.LogWarning("No Purview Event found");
-                    return "unable to parse purview event";
-                }
+                var trimString = input.Substring(input.IndexOf('{')).Trim();
+                _event = JsonConvert.DeserializeObject<Event>(trimString) ?? new Event();
 
-                _logger.LogInformation($"PurviewOut-ParserService: {purviewEvent}");
-                var jObjectPurviewEvent = JsonConvert.DeserializeObject<JObject>(purviewEvent) ?? new JObject();
-                _logger.LogInformation("Calling SendToPurview");
-                await _purviewIngestion.SendToPurview(jObjectPurviewEvent);
+                //Check if event is from Azure Synapse Spark Pools
+                if(_event.Job.Namespace.Contains("azuresynapsespark") && _event.EventType == "COMPLETE")
+                {
+                    var purviewSynapseEvent1 = _olToPurviewParsingService.GetParentEntity(_event);
+                    _logger.LogInformation($"PurviewOut-ParserService: {purviewSynapseEvent1}");
+                    var jObjectPurviewEvent1 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent1!) ?? new JObject();
+                    _logger.LogInformation("Calling SendToPurview");
+                    await _purviewIngestion.SendToPurview(jObjectPurviewEvent1);
+
+                    var purviewSynapseEvent2 = _olToPurviewParsingService.GetChildEntity(_event);
+                    _logger.LogInformation($"PurviewOut-ParserService: {purviewSynapseEvent2}");
+                    var jObjectPurviewEvent2 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent2!) ?? new JObject();
+                    _logger.LogInformation("Calling SendToPurview");
+                    await _purviewIngestion.SendToPurview(jObjectPurviewEvent2);
+                }
+                else
+                {
+                    var enrichedEvent = await _olConsolodateEnrich.ProcessOlMessage(input);
+                    if (enrichedEvent == null)
+                    {
+                        _logger.LogInformation($"Start event, duplicate event, or no context found - eventData: {input}");
+                        return "";
+                    }
+                    
+                    var purviewEvent = _olToPurviewParsingService.GetPurviewFromOlEvent(enrichedEvent);
+                    if (purviewEvent == null)
+                    {
+                        _logger.LogWarning("No Purview Event found");
+                        return "unable to parse purview event";
+                    }
+                    
+                    _logger.LogInformation($"PurviewOut-ParserService: {purviewEvent}");
+                    var jObjectPurviewEvent = JsonConvert.DeserializeObject<JObject>(purviewEvent) ?? new JObject();
+                    _logger.LogInformation("Calling SendToPurview");
+                    await _purviewIngestion.SendToPurview(jObjectPurviewEvent);
+                }
+                
+                
 
                 return $"Output message created at {DateTime.Now}";
             }
