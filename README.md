@@ -125,11 +125,11 @@ The below spark configuration needs to be created and attached to the Spark Pool
 | ------------------------------------------------| ------------------------------------------------------------|
 | spark.jars.packages                             | io.openlineage:openlineage-spark:0.13.0                     |
 | spark.extraListeners                            | io.openlineage.spark.agent.OpenLineageSparkListener         |
-| spark.openlineage.host                          | https://<functionname>.azurewebsites.net                    |
-| spark.openlineage.namespace                     | <synapseworkspace name>,azuresynapsespark                   |
-| spark.openlineage.url.param.code                | <Azure Function Code Secret>                                |
+| spark.openlineage.host                          | https://{functionname}.azurewebsites.net                    |
+| spark.openlineage.namespace                     | {synapse workspace name},azuresynapsespark                   |
+| spark.openlineage.url.param.code                | {Azure Function Code Secret}                                |
 
-The spark.openlineage.namespace needs to of the format <synapseworkspace name>,azuresynapsespark. "azuresynapsespark" is needed to disambiguate between Azure Databricks and Azure Synapse Spark Pools.
+The spark.openlineage.namespace needs to of the format {synapse workspace name},azuresynapsespark. "azuresynapsespark" is needed to disambiguate between Azure Databricks and Azure Synapse Spark Pools.
 
 ![sparkconfiguration.png](./assets/img/readme/sparkconfiguration.png)
 
