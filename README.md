@@ -29,8 +29,10 @@ This solution accelerator, together with the [OpenLineage](http://openlineage.io
 * [Prerequisites](#prerequisites)
 * [Getting Started](#getting-started)
 * [Using the Connector](#using-the-connector)
+* [Spark Lineage from Azure Synapse Spark Pools](#azuresynapsesparkpools)
 * [Troubleshooting](#Troubleshooting)
 * [Limitations & more](#Limitations)
+
 
 ## Overview
 
@@ -111,6 +113,33 @@ You should see several items listed under the heading of "Custom source types". 
     ![lineage_view.png](./assets/img/readme/lineage_view.png)
 
     **Note**: If you are viewing the Databricks Process shortly after it was created, sometimes the lineage tab takes some time to display. If you do not see the lineage tab, wait a few minutes and then refresh the browser.
+
+## Spark Lineage from Azure Synapse Spark Pools
+
+This connector can be used with Azure Synapse Spark Pools as well. 
+The below spark configuration needs to be created and attached to the Spark Pools in the Synapse Workspace. 
+
+| Spark Configuration Property                    | Value                                                       |
+| ------------------------------------------------| ------------------------------------------------------------|
+| spark.jars.packages                             | io.openlineage:openlineage-spark:0.13.0                     |
+| spark.extraListeners                            | io.openlineage.spark.agent.OpenLineageSparkListener         |
+| spark.openlineage.host                          | https://<functionname>.azurewebsites.net                    |
+| spark.openlineage.namespace                     | <synapseworkspace name>,azuresynapsespark                   |
+| spark.openlineage.url.param.code                | <Azure Function Code Secret>                                |
+
+The spark.openlineage.namespace needs to of the format <synapseworkspace name>,azuresynapsespark. "azuresynapsespark" is needed to disambiguate between Azure Databricks and Azure Synapse Spark Pools.
+
+![sparkconfiguration.png](./assets/img/readme/sparkconfiguration.png)
+
+Spark Properties, Related Notebooks and Lineage can be viewed as shown below. 
+
+![sparkproperties.png](./assets/img/readme/sparkproperties.png)
+
+![sparkprocessrelated.png](./assets/img/readme/sparkprocessrelated.png)
+
+![sparkprocesslineage.png](./assets/img/readme/sparkprocesslineage.png)
+
+
 
 ## Troubleshooting
 
