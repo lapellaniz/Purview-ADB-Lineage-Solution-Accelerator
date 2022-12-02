@@ -29,7 +29,7 @@ This solution accelerator, together with the [OpenLineage](http://openlineage.io
 * [Prerequisites](#prerequisites)
 * [Getting Started](#getting-started)
 * [Using the Connector](#using-the-connector)
-* [Spark Lineage from Azure Synapse Spark Pools](#azuresynapsesparkpools)
+* [Spark Lineage from Azure Synapse Spark Pools](#spark-lineage-from-azure-synapse-spark-pools)
 * [Troubleshooting](#Troubleshooting)
 * [Limitations & more](#Limitations)
 
@@ -114,7 +114,9 @@ You should see several items listed under the heading of "Custom source types". 
 
     **Note**: If you are viewing the Databricks Process shortly after it was created, sometimes the lineage tab takes some time to display. If you do not see the lineage tab, wait a few minutes and then refresh the browser.
 
+
 ## Spark Lineage from Azure Synapse Spark Pools
+
 
 This connector can be used with Azure Synapse Spark Pools as well. 
 The below spark configuration needs to be created and attached to the Spark Pools in the Synapse Workspace. 
