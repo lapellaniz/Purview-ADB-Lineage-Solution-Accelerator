@@ -37,7 +37,7 @@ From the [Azure Portal](https://portal.azure.com)
 
     ```powershell
     cd clouddrive
-    git clone -b <release_tag> https://github.com/microsoft/Purview-ADB-Lineage-Solution-Accelerator.git
+    git clone https://github.com/anildwarepo/Purview-ADB-Lineage-Solution-Accelerator.git
     ```
 
     > **Note**:<br/>
