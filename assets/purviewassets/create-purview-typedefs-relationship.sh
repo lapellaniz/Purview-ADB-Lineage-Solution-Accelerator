@@ -2,7 +2,7 @@
 tenantId="<>"
 clientId="<>"
 clientSecret="<>"
-scope="<>"
+scope="https%3A%2F%2Fpurview.azure.net%2F.default" #do not modify this
 purviewname="<>"
 
 

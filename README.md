@@ -144,7 +144,6 @@ Microsoft Purview does have the Entity and Relationship typedefs for Azure Synpa
         tenantId="<>"
         clientId="<>"
         clientSecret="<>"
-        scope="<>"
         purviewname="<>"
 
 2. Execute the script
