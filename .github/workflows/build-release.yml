@@ -70,6 +70,7 @@ jobs:
         path: ~/artifact/FunctionZip.zip
 
   runIntegrationTests:
+    if: ${{ false }}
     name: Test on Integration Tests
     needs: [build]
     runs-on: ubuntu-latest
@@ -153,7 +154,7 @@ jobs:
   createRelease:
     name: Create Release
     if: ${{ github.event_name == 'create' && github.ref_type == 'tag' }}
-    needs: [runIntegrationTests]
+    needs: [build]
     runs-on: ubuntu-latest
     environment: 
       name: ReleaseEnvironment
@@ -174,6 +175,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
   deployProductionEnvironment:
+    if: ${{ false }}
     name: Release to Production Environment
     needs: [createRelease]
     runs-on: ubuntu-latest
