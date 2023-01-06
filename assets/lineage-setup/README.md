@@ -36,6 +36,7 @@ This utility provisions resources in a Virtual Network with Private Endpoints. H
 
     ```bash
     git clone https://github.com/anildwarepo/Purview-ADB-Lineage-Solution-Accelerator.git
+    cd Purview-ADB-Lineage-Solution-Accelerator/assets/lineage-setup
     ```
 
 2. Provision Azure Resources that creates the required components to capture and process spark lineage. Follow prompts for needed input parameters.
