@@ -73,7 +73,7 @@ $jsonDataFile = (Split-Path $PSScriptRoot) + "\synapse-purview-types\purview_cus
 $jsonData = Get-Content -Raw -Path $jsonDataFile
 # Send the POST request
 $response = Invoke-RestMethod -Method POST -Uri $url -Headers $headers -Body $jsonData
-if ($response.StatusCode -eq 200) {
+if ($response.StatusCode -eq 204) {
     # request was successful
     $response.Content | ConvertFrom-Json
 } else {
@@ -90,7 +90,7 @@ $jsonDataFile = (Split-Path $PSScriptRoot) + "\synapse-purview-types\purview_syn
 $jsonData = Get-Content -Raw -Path $jsonDataFile
 # Send the POST request
 $response = Invoke-RestMethod -Method POST -Uri $url -Headers $headers -Body $jsonData
-if ($response.StatusCode -eq 200) {
+if ($response.StatusCode -eq 204) {
     # request was successful
     $response.Content | ConvertFrom-Json
 } else {
@@ -106,7 +106,7 @@ $jsonDataFile = (Split-Path $PSScriptRoot) + "\synapse-purview-types\purview_syn
 $jsonData = Get-Content -Raw -Path $jsonDataFile
 # Send the POST request
 $response = Invoke-RestMethod -Method POST -Uri $url -Headers $headers -Body $jsonData
-if ($response.StatusCode -eq 200) {
+if ($response.StatusCode -eq 204) {
     # request was successful
     $response.Content | ConvertFrom-Json
 } else {
@@ -122,7 +122,7 @@ $jsonDataFile = (Split-Path $PSScriptRoot) + "\synapse-purview-types\purview_syn
 $jsonData = Get-Content -Raw -Path $jsonDataFile
 # Send the POST request
 $response = Invoke-RestMethod -Method POST -Uri $url -Headers $headers -Body $jsonData
-if ($response.StatusCode -eq 200) {
+if ($response.StatusCode -eq 204) {
     # request was successful
     $response.Content | ConvertFrom-Json
 } else {
