@@ -96,6 +96,6 @@ This utility provisions resources in a Virtual Network with Private Endpoints. H
 4. Create purivew typedefs and entities
 
     ```bash
-    .\create-purview-typedefs-relationship-run-within-network.sh
+    .\create-purview-typedefs-relationship-run-within-network.ps1
     ```
     **Note** This utility requires network connectivity to Azure Virtual Network.
