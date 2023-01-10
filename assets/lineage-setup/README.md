@@ -39,6 +39,7 @@ This utility provisions resources in a Virtual Network with Private Endpoints. H
 
 * Network connectivity to Azure Virtual Network.
 
+
 ## How to run utility using bash
 
 1. Clone repo
@@ -49,6 +50,8 @@ This utility provisions resources in a Virtual Network with Private Endpoints. H
     ```
 
 2. Provision Azure Resources that creates the required components to capture and process spark lineage. Follow prompts for needed input parameters.
+
+    [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fanildwarepo%2FPurview-ADB-Lineage-Solution-Accelerator%2Frelease%2F2.1%2Fassets%2Flineage-setup%2Fpurview-lineage-accelerator-template.json)
 
     ```bash
     ./setup-lineage-cloudshell.sh
