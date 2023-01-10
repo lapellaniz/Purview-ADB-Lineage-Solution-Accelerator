@@ -31,10 +31,6 @@ if ([string]::IsNullOrEmpty($purviewname)) {
 } 
 
 
-$tenantId="72f988bf-86f1-41af-91ab-2d7cd011db47"
-$clientId="52257128-5989-4b8d-a3fb-7cc123d48f7a"
-$clientSecret="vgb8Q~rQ29VV6xP2lg5u4xp3StsGxoC6y6E7Nc01"
-$purviewname="anildwapurview-vnet"
 
 $scope="https%3A%2F%2Fpurview.azure.net%2F.default" #do not modify this
 
