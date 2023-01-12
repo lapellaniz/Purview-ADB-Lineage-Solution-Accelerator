@@ -210,7 +210,24 @@
                 ]
             }
         },
-        
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[format('{0}/{1}', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+            "properties": {
+                "privateDnsZoneConfigs": [
+                {
+                    "name": "config",
+                    "properties": {
+                    "privateDnsZoneId": "[resourceId('aml-vnet-westus-rg','Microsoft.Network/privateDnsZones', variables('privateStorageBlobDnsZoneName'))]"
+                    }
+                }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointStorageBlobName'))]"
+            ]
+        },
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2021-09-01",
@@ -272,7 +289,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]",
-                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+				"[resourceId('aml-vnet-westus-rg','Microsoft.Network/privateEndpoints/privateDnsZoneGroups', format('{0}/{1}', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup'))]"
             ],
             "kind": "[if(variables('isReserved'), 'functionapp,linux', 'functionapp')]",
             "properties": {
