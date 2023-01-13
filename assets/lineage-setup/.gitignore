@@ -1,3 +1,3 @@
 # template file might contain secrets
 template-parameters.json
-.gitignore
+template-parameters-akv-secrets.json

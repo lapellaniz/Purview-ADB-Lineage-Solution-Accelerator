@@ -44,9 +44,10 @@ if((az resource list -g $resourceGroupName | ConvertFrom-Json).Count) {
 else {
      
      echo "Deploying lineage accelerator ARM template..."
-     $template_path = (Split-Path $PSScriptRoot) + "\purview-lineage-accelerator-template.json"
-     az deployment group create --resource-group $resourceGroupName --template-file $template_path
-
+     $lineage_template_path = (Split-Path $PSScriptRoot) + "\purview-lineage-accelerator-template-no-dnszone.json"
+     az deployment group create --resource-group $resourceGroupName --template-file $lineage_template_path
+     $lineage_secrets_template_path = (Split-Path $PSScriptRoot) + "\purview-lineage-accelerator-template-akv-secrets.json"
+     az deployment group create --resource-group $resourceGroupName --template-file $lineage_secrets_template_path
 }
 
 $functionname=((az resource list -g $resourceGroupName | ConvertFrom-Json) | Where type -eq "Microsoft.Web/sites").name

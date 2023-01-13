@@ -1,421 +1,455 @@
 {
-
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    "metadata": {
+      "_generator": {
+        "name": "bicep",
+        "version": "0.10.61.36676",
+        "templateHash": "10199288641664815283"
+      }
+    },
     "parameters": {
-        "prefixName": {
+       "prefixName": {
 			"type": "string"            
-		},
-        "location": {
-            "defaultValue": "[resourceGroup().location]",
-            "type": "String",
-            "metadata": {
-                "description": "The location into which the resources should be deployed."
-            }
-        },
-        "resourceTagValues": {
-			"defaultValue": {},
-            "type": "object"
-		},
-        "clientid": {
-            "type": "string"
-		},
-		"clientsecret": {
-			"type": "securestring"
-		},
-        "eventHubsNamespaceSku": {
-            "type": "string",
-            "allowedValues": [ "Basic", "Standard" ],
-            "defaultValue": "Standard",
-            "metadata": {
-                "description": "Specifies the messaging tier for service Bus namespace."
-            }
-        },
-        "eventHubsNamespaceCapacity": {
-            "type": "int",
-            "allowedValues": [ 1, 2, 4 ],
-            "defaultValue": 1,
-            "metadata": {
-                "description": "Specifies the Messaging Units for a premium namespace."
-            }
-        },
-        "consumerGroupName": {
-            "type": "string",
-            "defaultValue": "read",
-            "metadata": {
-                "description": "Specifies the name of a new Consumer Group."
-            }
-        },
-        "eventHubsNamespaceZoneRedundant": {
-            "type": "bool",
-            "defaultValue": false,
-            "metadata": {
-                "description": "Enabling this property creates a Event Hubs Namespace in regions that support availability zones."
-            }
-        },
-        "eventHubsNamespacePrivateEndpointName": {
-            "type": "string",
-            "defaultValue": "EventHubsNamespacePrivateEndpoint",
-            "metadata": {
-                "description": "Specifies the name of the private link to the storage account."
-            }
-        },
-        "keyvaultPrivateEndpointName": {
-            "type": "string",
-            "defaultValue": "KeyVaultPrivateEndpoint",
-            "metadata": {
-                "description": "Specifies the name of the private link to the key vault."
-            }
-        },
-        "functionAppName": {
-            "defaultValue": "[format('func-2-{0}', uniqueString(resourceGroup().id))]",
-            "type": "String",
-            "metadata": {
-                "description": "The name of the Azure Function app."
-            }
-        },
-        "functionAppPlanSku": {
-            "defaultValue": "EP1",
-            "allowedValues": [
-                "EP1",
-                "EP2",
-                "EP3"
-            ],
-            "type": "String",
-            "metadata": {
-                "description": "Specifies the Azure Function hosting plan SKU."
-            }
-        },
-        "functionAppPlanName": {
-            "defaultValue": "[format('plan-{0}', uniqueString(resourceGroup().id))]",
-            "type": "String",
-            "metadata": {
-                "description": "The name of the Azure Function hosting plan."
-            }
-        },
-        "functionPlanOS": {
-            "defaultValue": "Windows",
-            "allowedValues": [
-                "Windows",
-                "Linux"
-            ],
-            "type": "String",
-            "metadata": {
-                "description": "Specifies the OS used for the Azure Function hosting plan."
-            }
-        },
-        "functionStorageAccountName": {
-            "defaultValue": "[format('st{0}', uniqueString(resourceGroup().id))]",
-            "type": "String",
-            "metadata": {
-                "description": "The name of the backend Azure storage account used by the Azure Function app."
-            }
-        },
-        "vnetNameRgName": {
+		  },
+      "functionAppName": {
+        "type": "string",
+        "defaultValue": "[format('func-{0}', uniqueString(resourceGroup().id))]",
+        "metadata": {
+          "description": "The name of the Azure Function app."
+        }
+      },
+      "location": {
+        "type": "string",
+        "defaultValue": "[resourceGroup().location]",
+        "metadata": {
+          "description": "The location into which the resources should be deployed."
+        }
+      },
+     
+      "eventHubsNamespaceSku": {
+          "type": "string",
+          "allowedValues": [ "Basic", "Standard" ],
+          "defaultValue": "Standard",
+          "metadata": {
+              "description": "Specifies the messaging tier for service Bus namespace."
+          }
+      },
+      "eventHubsNamespaceCapacity": {
+          "type": "int",
+          "allowedValues": [ 1, 2, 4 ],
+          "defaultValue": 1,
+          "metadata": {
+              "description": "Specifies the Messaging Units for a premium namespace."
+          }
+      },
+      "consumerGroupName": {
+          "type": "string",
+          "defaultValue": "read",
+          "metadata": {
+              "description": "Specifies the name of a new Consumer Group."
+          }
+      },
+      "eventHubsNamespaceZoneRedundant": {
+          "type": "bool",
+          "defaultValue": false,
+          "metadata": {
+              "description": "Enabling this property creates a Event Hubs Namespace in regions that support availability zones."
+          }
+      },
+      "eventHubsNamespacePrivateEndpointName": {
+          "type": "string",
+          "defaultValue": "EventHubsNamespacePrivateEndpoint",
+          "metadata": {
+              "description": "Specifies the name of the private link to the storage account."
+          }
+      },
+      "keyvaultPrivateEndpointName": {
+          "type": "string",
+          "defaultValue": "KeyVaultPrivateEndpoint",
+          "metadata": {
+              "description": "Specifies the name of the private link to the key vault."
+          }
+      },
+      "functionWorkerRuntime": {
+        "type": "string",
+        "defaultValue": "dotnet-isolated",
+        "allowedValues": [
+          "dotnet-isolated",
+          "dotnet",
+          "node",
+          "python",
+          "java"
+        ],
+        "metadata": {
+          "description": "The language worker runtime to load in the function app."
+        }
+      },
+      "functionPlanOS": {
+        "type": "string",
+        "defaultValue": "Windows",
+        "allowedValues": [
+          "Windows",
+          "Linux"
+        ],
+        "metadata": {
+          "description": "Specifies the OS used for the Azure Function hosting plan."
+        }
+      },
+      "functionAppPlanSku": {
+        "type": "string",
+        "defaultValue": "EP1",
+        "allowedValues": [
+          "EP1",
+          "EP2",
+          "EP3"
+        ],
+        "metadata": {
+          "description": "Specifies the Azure Function hosting plan SKU."
+        }
+      },
+      "functionAppPlanName": {
+        "type": "string",
+        "defaultValue": "[format('plan-{0}', uniqueString(resourceGroup().id))]",
+        "metadata": {
+          "description": "The name of the Azure Function hosting plan."
+        }
+      },
+      "functionStorageAccountName": {
+        "type": "string",
+        "defaultValue": "[format('st{0}', uniqueString(resourceGroup().id))]",
+        "metadata": {
+          "description": "The name of the backend Azure storage account used by the Azure Function app."
+        }
+      },
+      "vnetNameRgName": {
             "type": "String",
             "metadata": {
                 "description": "The name of the resource group containing the virtual network for virtual network integration."
             }
-        },
-        "vnetName": {
-            "type": "String",
-            "metadata": {
-                "description": "The name of the virtual network for virtual network integration."
-            }
-        },        
-        "functionSubnetName": {
-            "type": "String",
-            "metadata": {
-                "description": "The name of the virtual network subnet used for allocating IP addresses for private endpoints."
-            }
-        },
-        "privateEndpointSubnetName": {
-            "type": "String",
-            "metadata": {
-                "description": "The name of the virtual network subnet used for allocating IP addresses for private endpoints."
-            }
-        },
-        "purviewName": {
+      },
+      "vnetName": {
+        "type": "string",
+        "defaultValue": "[format('vnet-{0}', uniqueString(resourceGroup().id))]",
+        "metadata": {
+          "description": "The name of the virtual network for virtual network integration."
+        }
+      },
+      "functionSubnetName": {
+        "type": "string",
+        "defaultValue": "snet-func",
+        "metadata": {
+          "description": "The name of the virtual network subnet to be associated with the Azure Function app."
+        }
+      },
+      "privateEndpointSubnetName": {
+        "type": "string",
+        "defaultValue": "snet-pe",
+        "metadata": {
+          "description": "The name of the virtual network subnet used for allocating IP addresses for private endpoints."
+        }
+      },
+     "purviewName": {
 			"type": "string",
 			"metadata": {
 				"description": "existing purview account name"
 			}
-		},
-        "listenToMessagesFromPurviewKafka": {
+		  },
+      "blobPrivateDNSZoneResourceGroupName": {
 			"type": "string",
-            "defaultValue": ""
-		}
-    },
-    "variables": {
-        "paramName": "[parameters('prefixName')]",
-        "rgId": "[resourceGroup().id]",
-        "uniqueName": "[substring(uniqueString(variables('rgId')),0,4)]",
-        "applicationInsightsName": "[format('appi-{0}', uniqueString(resourceGroup().id))]",
-        "storageAccountName": "[parameters('functionStorageAccountName')]",
-        "privateFunctionAppDnsZoneName": "privatelink.azurewebsites.net",
-        "privateEndpointFunctionAppName": "[format('{0}-private-endpoint', parameters('functionAppName'))]",
-        "privateStorageBlobDnsZoneName": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
-        "privateEndpointStorageBlobName": "[format('{0}-blob-private-endpoint', parameters('functionStorageAccountName'))]",
-        "functionWorkerRuntime": "dotnet-isolated",
-        "isReserved": "[if(equals(parameters('functionPlanOS'), 'Linux'), true(), false())]",
-        "openlineageEventHubNameSpaceName": "[replace(replace(toLower(concat(concat('eventhubns',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
-		"openlineageNameEventHubName": "eventhubsplin4tvh",
-		"eventHubsPublicDNSZoneForwarder": "[if(equals(toLower(environment().name), 'azureusgovernment'), '.servicebus.usgovcloudapi.net', '.servicebus.windows.net')]",
-        "eventHubsNamespacePrivateDnsZoneName": "[concat('privatelink', variables('eventHubsPublicDNSZoneForwarder'))]",        
-        "openlineageKeyVaultName": "[concat('keyvault',variables('uniqueName'))]",
-        "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net",
-        "keyvaultPrivateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('keyvaultPrivateDnsZoneName'))]",
-		"purviewAccountName": "[parameters('purviewName')]",
-        "keyvaultPrivateEndpointGroupName": "vault",
-		"kafkaEndpoint":"[parameters('listenToMessagesFromPurviewKafka')]",
-        "clientidkey": "clientIdKey",
-		"clientsecretkey": "clientSecretKey",
-		"storageAccountAccessKey": "storageAccessKey",
-		"functionStorageAccessKey": "functionStorageAccessKey",
-		"EventHubConnectionSecretNameSend": "ehsecretSend",
-		"EventHubConnectionSecretNameListen": "ehsecretListen",
-        "eventHubsNamespacePrivateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('eventHubsNamespacePrivateDnsZoneName'))]",
-		"eventHubsNamespacePrivateEndpointGroupName": "namespace",
-        "eventHubsNamespaceId": "[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
-		"functionStorageSecret": "functionStorageSecret",
-		"OLOutputAPIKeySecretName": "Ol-Output-Api-Key"
-    },
-    "functions": [],
-    "resources": [
-        
-        
-        
-        {
-            "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2021-02-01",
-            "name": "[variables('privateEndpointStorageBlobName')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]"
-            ],
-            "properties": {
-                "subnet": {
-                    "id": "[resourceId(parameters('vnetNameRgName'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
-                },
-                "privateLinkServiceConnections": [
-                    {
-                        "name": "[format('{0}/{1}', parameters('functionStorageAccountName'), 'PrivateLinkConnection')]",
-                        "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]",
-                            "groupIds": [
-                                "blob"
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-            "apiVersion": "2022-05-01",
-            "name": "[format('{0}/{1}', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
-            "properties": {
-                "privateDnsZoneConfigs": [
-                {
-                    "name": "config",
-                    "properties": {
-                    "privateDnsZoneId": "[resourceId('aml-vnet-westus-rg','Microsoft.Network/privateDnsZones', variables('privateStorageBlobDnsZoneName'))]"
-                    }
-                }
-                ]
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointStorageBlobName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2021-09-01",
-            "name": "[parameters('functionStorageAccountName')]",
-            "location": "[parameters('location')]",
-            "kind": "StorageV2",
-            "sku": {
-                "name": "Standard_LRS"
-            },
-            "properties": {
-                "publicNetworkAccess": "Disabled",
-                "allowBlobPublicAccess": false,
-                "networkAcls": {
-                    "bypass": "None",
-                    "defaultAction": "Deny"
-                }   
-                
-            }
-        },
-        {
-            "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2021-02-01",
-            "name": "[parameters('functionAppPlanName')]",
-            "location": "[parameters('location')]",
-            "sku": {
-                "tier": "ElasticPremium",
-                "name": "[parameters('functionAppPlanSku')]",
-                "size": "[parameters('functionAppPlanSku')]",
-                "family": "EP"
-            },
-            "kind": "elastic",
-            "properties": {
-                "maximumElasticWorkerCount": 20,
-                "reserved": "[variables('isReserved')]"
-            }
-        },
-        {
-			"type": "microsoft.insights/components",
-			"apiVersion": "2020-02-02-preview",
-			"name": "[variables('applicationInsightsName')]",
-			"location": "[resourceGroup().location]",
-			"tags": {
-				"[concat('hidden-link:', resourceId('Microsoft.Web/sites', variables('applicationInsightsName')))]": "Resource"
-			},
-			"properties": {
-				"ApplicationId": "[variables('applicationInsightsName')]",
-				"Request_Source": "IbizaWebAppExtensionCreate"
+			"metadata": {
+				"description": "Resource group name where privatelink.blob.core.windows.net Private DNS Zone exists"
 			}
 		},
-        
-        {
-            "type": "Microsoft.Web/sites",
-            "apiVersion": "2021-02-01",
-            "name": "[parameters('functionAppName')]",
-            "location": "[parameters('location')]",
-            "identity": {
-				"type": "SystemAssigned"
-			},
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]",
-                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
-				"[resourceId('aml-vnet-westus-rg','Microsoft.Network/privateEndpoints/privateDnsZoneGroups', format('{0}/{1}', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup'))]"
-            ],
-            "kind": "[if(variables('isReserved'), 'functionapp,linux', 'functionapp')]",
-            "properties": {
-                "reserved": "[variables('isReserved')]",
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppPlanName'))]",
-                "siteConfig": {
-                    "appSettings": [
-                        {
-							"name": "AzureWebJobsStorage",
-							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
-						},
-						{
-							"name": "FUNCTIONS_EXTENSION_VERSION",
-							"value": "~4"
-						},
-						{
-							"name": "WEBSITE_NODE_DEFAULT_VERSION",
-							"value": "~10"
-						},
-						{
-							"name": "FUNCTIONS_WORKER_RUNTIME",
-							"value": "[variables('functionWorkerRuntime')]"
-						},
-                        {
-                            "name": "WEBSITE_VNET_ROUTE_ALL",
-                            "value": "1"
-                        },
-                        {
-                            "name": "WEBSITE_CONTENTOVERVNET",
-                            "value": "1"
-                        },
-                        {
-                            "name": "WEBSITE_RUN_FROM_PACKAGE",
-                            "value": "https://github.com/anildwarepo/Purview-ADB-Lineage-Solution-Accelerator/releases/download/v2.2.2/FunctionZip.zip"
-                        },
-                        {
-                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(resourceId('microsoft.insights/components', variables('applicationInsightsName')), '2020-02-02-preview').InstrumentationKey]"
-                        },
-                        {
-                            "name": "EventHubName",
-                            "value": "[variables('openlineageNameEventHubName')]"
-                        },
-                        {
-                            "name": "ListenToMessagesFromEventHub",
-                            "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('EventHubConnectionSecretNameListen'),')')]"
-                        },
-                        {
-                            "name": "SendMessagesToEventHub",
-                            "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('EventHubConnectionSecretNameSend'),')')]"
-                        },
-                        {
-                            "name": "EventHubConsumerGroup",
-                            "value": "read"
-                        },
-                        {
-                            "name": "OlToPurviewMappings",
-                            "value": "{\"olToPurviewMappings\":[{\"name\":\"wasbs\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"wasbs\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_blob_path\",\"purviewPrefix\":\"https\"},{\"name\":\"wasb\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"wasb\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_blob_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsBlobRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssBlobRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsBlob\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfs\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssBlob\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfss\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"synapseSqlNonDbo\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameSpcBodyParts[0]\",\"compare\":\"contains\",\"op2\":\"azuresynapse\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_synapse_dedicated_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"synapseSql\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameSpcBodyParts[0]\",\"compare\":\"contains\",\"op2\":\"azuresynapse\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0].parts[0]}\",\"purviewDataType\":\"azure_synapse_dedicated_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQLNonDbo\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameGroups\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0]}/{nameGroups[1]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQLNonDboNoDotsInNames\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQL\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azurePostgresNonPublic\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"},{\"op1\":\"nameSpcConParts\",\"compare\":\">\",\"op2\":\"4\"},{\"op1\":\"nameSpcConParts[3]\",\"compare\":\"=\",\"op2\":\"azure\"}],\"qualifiedName\":\"postgresql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"azurePostgres\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"},{\"op1\":\"nameSpcConParts\",\"compare\":\">\",\"op2\":\"4\"},{\"op1\":\"nameSpcConParts[3]\",\"compare\":\"=\",\"op2\":\"azure\"}],\"qualifiedName\":\"postgresql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/public/{nameGroups[0]}\",\"purviewDataType\":\"azure_postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"postgresNonPublic\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/{nameGroups[0].parts[0]}/tables/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"postgres\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"}],\"qualifiedName\":\"postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/public/tables/{nameGroups[0]}\",\"purviewDataType\":\"postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"hiveManagedTableNotDefault\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"dbfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"contains\",\"op2\":\"hive/warehouse\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"4\"}],\"qualifiedName\":\"{nameGroups[0].parts[3]}.{nameGroups[0].parts[5]}@{AdbWorkspaceUrl}\",\"purviewDataType\":\"hive_table\",\"purviewPrefix\":\"hive\"},{\"name\":\"hiveManagedTableDefault\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"dbfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"contains\",\"op2\":\"hive/warehouse\"}],\"qualifiedName\":\"default.{nameGroups[0].parts[3]}@{AdbWorkspaceUrl}\",\"purviewDataType\":\"hive_table\",\"purviewPrefix\":\"hive\"},{\"name\":\"azureMySql\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"mysql\"}],\"qualifiedName\":\"mysql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_mysql_table\",\"purviewPrefix\":\"mysql\"}]}"
-                        },
-                        {
-                            "name": "PurviewAccountName",
-                            "value": "[variables('purviewAccountName')]"
-                        },
-                        {
-                            "name":"listenToMessagesFromPurviewKafka",
-                            "value":"[variables('kafkaEndpoint')]"
-                        },
-                        {
-                            "name": "ClientID",
-                            "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientidkey'),')')]"
-                        },
-                        {
-                            "name": "ClientSecret",
-                            "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientsecretkey'),')')]"
-                        },
-                        {
-                            "name": "TenantId",
-                            "value": "[subscription().tenantId]"
-                        } 
-                        
-                    ]
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/networkConfig",
-            "apiVersion": "2021-02-01",
-            "name": "[format('{0}/{1}', parameters('functionAppName'), 'virtualNetwork')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
-            ],
-            "properties": {
-                "subnetResourceId": "[resourceId(parameters('vnetNameRgName'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('functionSubnetName'))]",
-                "swiftSupported": true
-            }
-        },
-        
-        {
-            "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2021-02-01",
-            "name": "[variables('privateEndpointFunctionAppName')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
-            ],
-            "properties": {
-                "subnet": {
-                    "id": "[resourceId(parameters('vnetNameRgName'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
-                },
-                "privateLinkServiceConnections": [
-                    {
-                        "name": "[format('{0}/{1}', parameters('functionAppName'), 'PrivateLinkConnection')]",
-                        "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
-                            "groupIds": [
-                                "sites"
-                            ]
-                        }
-                    }
+      "functionPrivateDNSZoneResourceGroupName": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource group name where privatelink.azurewebsites.net Private DNS Zone exists"
+			}
+		},
+      "keyvaultPrivateDNSZoneResourceGroupName": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource group name where privatelink.vaultcore.azure.net Private DNS Zone exists"
+			}
+		},
+      "eventHubPrivateDNSZoneResourceGroupName": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource group name where privatelink.servicebus.windows.net Private DNS Zone exists"
+			}
+		}
+      
+    },
+    "variables": {
+      "paramName": "[parameters('prefixName')]",
+      "rgId": "[resourceGroup().id]",
+      "uniqueName": "[substring(uniqueString(variables('rgId')),0,4)]",
+      "applicationInsightsName": "[format('appi-{0}', uniqueString(resourceGroup().id))]",
+      "privateFunctionAppDnsZoneName": "privatelink.azurewebsites.net",
+      "privateEndpointFunctionAppName": "[format('{0}-private-endpoint', parameters('functionAppName'))]",
+      "privateStorageBlobDnsZoneName": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
+      "privateEndpointStorageBlobName": "[format('{0}-blob-private-endpoint', parameters('functionStorageAccountName'))]",
+      "isReserved": "[if(equals(parameters('functionPlanOS'), 'Linux'), true(), false())]",
+      "openlineageKeyVaultName": "[concat('keyvault',variables('uniqueName'))]",
+      "EventHubConnectionSecretNameSend": "ehsecretSend",
+		  "EventHubConnectionSecretNameListen": "ehsecretListen",
+      "clientidkey": "clientIdKey",
+		  "clientsecretkey": "clientSecretKey",
+      "openlineageEventHubNameSpaceName": "[replace(replace(toLower(concat(concat('eventhubns',variables('paramName')),variables('uniqueName'))),'-',''),'_','')]",
+      "openlineageNameEventHubName": "eventhubsplin4tvh",
+      "eventHubsNamespaceId": "[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
+      "eventHubsNamespacePrivateEndpointGroupName": "namespace",
+      "eventHubsPublicDNSZoneForwarder": "[if(equals(toLower(environment().name), 'azureusgovernment'), '.servicebus.usgovcloudapi.net', '.servicebus.windows.net')]",
+      "eventHubsNamespacePrivateDnsZoneName": "[concat('privatelink', variables('eventHubsPublicDNSZoneForwarder'))]",        
+      "keyvaultPrivateEndpointGroupName": "vault",
+      "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net",
+      "functionStorageSecret": "functionStorageSecret",
+      "OLOutputAPIKeySecretName": "Ol-Output-Api-Key",
+		  "storageAccountAccessKey": "storageAccessKey",
+      "functionStorageAccessKey": "functionStorageAccessKey"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/privateEndpoints",
+        "apiVersion": "2022-05-01",
+        "name": "[variables('privateEndpointStorageBlobName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "subnet": {
+            "id": "[resourceId(parameters('vnetNameRgName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
+          },
+          "privateLinkServiceConnections": [
+            {
+              "name": "MyStorageBlobPrivateLinkConnection",
+              "properties": {
+                "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]",
+                "groupIds": [
+                  "blob"
                 ]
+              }
             }
+          ]
         },
-        
+        "dependsOn": [
+          "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]"
+        ]
+      },
+      {
+        "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+        "apiVersion": "2022-05-01",
+        "name": "[format('{0}/{1}', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+        "properties": {
+          "privateDnsZoneConfigs": [
+            {
+              "name": "config",
+              "properties": {
+                "privateDnsZoneId": "[resourceId(parameters('blobPrivateDNSZoneResourceGroupName'), 'Microsoft.Network/privateDnsZones', variables('privateStorageBlobDnsZoneName'))]"
+              }
+            }
+          ]
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointStorageBlobName'))]"
+        ]
+      },
+      {
+        "type": "Microsoft.Storage/storageAccounts",
+        "apiVersion": "2022-05-01",
+        "name": "[parameters('functionStorageAccountName')]",
+        "location": "[parameters('location')]",
+        "kind": "StorageV2",
+        "sku": {
+          "name": "Standard_LRS"
+        },
+        "properties": {
+          "publicNetworkAccess": "Disabled",
+          "allowBlobPublicAccess": false,
+          "networkAcls": {
+            "bypass": "None",
+            "defaultAction": "Deny"
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Insights/components",
+        "apiVersion": "2020-02-02",
+        "name": "[variables('applicationInsightsName')]",
+        "location": "[parameters('location')]",
+        "kind": "web",
+        "properties": {
+          "Application_Type": "web"
+        }
+      },
+      {
+        "type": "Microsoft.Web/serverfarms",
+        "apiVersion": "2022-03-01",
+        "name": "[parameters('functionAppPlanName')]",
+        "location": "[parameters('location')]",
+        "sku": {
+          "tier": "ElasticPremium",
+          "name": "[parameters('functionAppPlanSku')]",
+          "size": "[parameters('functionAppPlanSku')]",
+          "family": "EP"
+        },
+        "kind": "elastic",
+        "properties": {
+          "maximumElasticWorkerCount": 20,
+          "reserved": "[variables('isReserved')]"
+        }
+      },
+      {
+        "type": "Microsoft.Web/sites",
+        "apiVersion": "2022-03-01",
+        "name": "[parameters('functionAppName')]",
+        "location": "[parameters('location')]",
+        "kind": "[if(variables('isReserved'), 'functionapp,linux', 'functionapp')]",
+        "identity": {
+				    "type": "SystemAssigned"
+        },
+        "properties": {
+          "reserved": "[variables('isReserved')]",
+          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppPlanName'))]",
+          "siteConfig": {
+            "functionsRuntimeScaleMonitoringEnabled": true,
+            "appSettings": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))).InstrumentationKey]"
+              },
+              {
+                "name": "AzureWebJobsStorage",
+                "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('functionStorageAccountName'), listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName')), '2022-05-01').keys[0].value)]"
+              },
+              {
+                "name": "FUNCTIONS_EXTENSION_VERSION",
+                "value": "~4"
+              },
+              {
+                "name": "FUNCTIONS_WORKER_RUNTIME",
+                "value": "[parameters('functionWorkerRuntime')]"
+              },
+              {
+                "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                "value": "~14"
+              },
+              {
+                "name": "WEBSITE_VNET_ROUTE_ALL",
+                "value": "1"
+              },
+              {
+                "name": "WEBSITE_CONTENTOVERVNET",
+                "value": "1"
+              },
+              {
+                "name": "WEBSITE_RUN_FROM_PACKAGE",
+                "value": "https://github.com/anildwarepo/Purview-ADB-Lineage-Solution-Accelerator/releases/download/v2.2.2/FunctionZip.zip"
+              },
+              {
+                  "name": "EventHubName",
+                  "value": "[variables('openlineageNameEventHubName')]"
+              },
+              {
+                  "name": "ListenToMessagesFromEventHub",
+                  "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('EventHubConnectionSecretNameListen'),')')]"
+              },
+              {
+                  "name": "SendMessagesToEventHub",
+                  "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('EventHubConnectionSecretNameSend'),')')]"
+              },
+              {
+                  "name": "EventHubConsumerGroup",
+                  "value": "read"
+              },
+              {
+                  "name": "OlToPurviewMappings",
+                  "value": "{\"olToPurviewMappings\":[{\"name\":\"wasbs\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"wasbs\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_blob_path\",\"purviewPrefix\":\"https\"},{\"name\":\"wasb\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"wasb\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_blob_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsBlobRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssBlobRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssRootFS\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"=\",\"op2\":\"\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_filesystem\",\"purviewPrefix\":\"https\"},{\"name\":\"abfsBlob\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfs\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfs\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfssBlob\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"},{\"op1\":\"nameSpcBodyParts[1]\",\"compare\":\"contains\",\"op2\":\"blob\"}],\"qualifiedName\":\"https://{nameSpcConParts[0]}.dfs.{nameSpcConParts[2]}.{nameSpcConParts[3]}.{nameSpcConParts[4]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"abfss\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"abfss\"}],\"qualifiedName\":\"https://{nameSpcBodyParts[1]}/{nameSpcBodyParts[0]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_datalake_gen2_path\",\"purviewPrefix\":\"https\"},{\"name\":\"synapseSqlNonDbo\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameSpcBodyParts[0]\",\"compare\":\"contains\",\"op2\":\"azuresynapse\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_synapse_dedicated_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"synapseSql\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameSpcBodyParts[0]\",\"compare\":\"contains\",\"op2\":\"azuresynapse\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0].parts[0]}\",\"purviewDataType\":\"azure_synapse_dedicated_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQLNonDbo\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameGroups\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0]}/{nameGroups[1]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQLNonDboNoDotsInNames\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azureSQL\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"sqlserver\"}],\"qualifiedName\":\"mssql://{nameSpcBodyParts[0]}/{nameSpcNameVals['database']}/dbo/{nameGroups[0]}\",\"purviewDataType\":\"azure_sql_table\",\"purviewPrefix\":\"mssql\"},{\"name\":\"azurePostgresNonPublic\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"},{\"op1\":\"nameSpcConParts\",\"compare\":\">\",\"op2\":\"4\"},{\"op1\":\"nameSpcConParts[3]\",\"compare\":\"=\",\"op2\":\"azure\"}],\"qualifiedName\":\"postgresql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0].parts[0]}/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"azure_postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"azurePostgres\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"},{\"op1\":\"nameSpcConParts\",\"compare\":\">\",\"op2\":\"4\"},{\"op1\":\"nameSpcConParts[3]\",\"compare\":\"=\",\"op2\":\"azure\"}],\"qualifiedName\":\"postgresql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/public/{nameGroups[0]}\",\"purviewDataType\":\"azure_postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"postgresNonPublic\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"1\"}],\"qualifiedName\":\"postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/{nameGroups[0].parts[0]}/tables/{nameGroups[0].parts[1]}\",\"purviewDataType\":\"postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"postgres\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"postgresql\"}],\"qualifiedName\":\"postgresql://servers/{nameSpcBodyParts[0]}:{nameSpcBodyParts[1]}/dbs/{nameSpcBodyParts[2]}/schemas/public/tables/{nameGroups[0]}\",\"purviewDataType\":\"postgresql_table\",\"purviewPrefix\":\"postgresql\"},{\"name\":\"hiveManagedTableNotDefault\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"dbfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"contains\",\"op2\":\"hive/warehouse\"},{\"op1\":\"nameGroups[0].parts\",\"compare\":\">\",\"op2\":\"4\"}],\"qualifiedName\":\"{nameGroups[0].parts[3]}.{nameGroups[0].parts[5]}@{AdbWorkspaceUrl}\",\"purviewDataType\":\"hive_table\",\"purviewPrefix\":\"hive\"},{\"name\":\"hiveManagedTableDefault\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"dbfs\"},{\"op1\":\"nameGroups[0]\",\"compare\":\"contains\",\"op2\":\"hive/warehouse\"}],\"qualifiedName\":\"default.{nameGroups[0].parts[3]}@{AdbWorkspaceUrl}\",\"purviewDataType\":\"hive_table\",\"purviewPrefix\":\"hive\"},{\"name\":\"azureMySql\",\"parserConditions\":[{\"op1\":\"prefix\",\"compare\":\"=\",\"op2\":\"mysql\"}],\"qualifiedName\":\"mysql://{nameSpcBodyParts[0]}/{nameSpcBodyParts[2]}/{nameGroups[0]}\",\"purviewDataType\":\"azure_mysql_table\",\"purviewPrefix\":\"mysql\"}]}"
+              },
+              {
+                  "name": "PurviewAccountName",
+                  "value": "[parameters('purviewName')]"
+              },
+              {
+                  "name": "ClientID",
+                  "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientidkey'),')')]"
+              },
+              {
+                  "name": "ClientSecret",
+                  "value": "[concat('@Microsoft.KeyVault(VaultName=', variables('openlineageKeyVaultName'),';SecretName=',variables('clientsecretkey'),')')]"
+              },
+              {
+                  "name": "TenantId",
+                  "value": "[subscription().tenantId]"
+              } 
+              
+            ]
+          }
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+          "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppPlanName'))]",
+          "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+          "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]"
+        ]
+      },
+      {
+        "type": "Microsoft.Web/sites/networkConfig",
+        "apiVersion": "2022-03-01",
+        "name": "[format('{0}/{1}', parameters('functionAppName'), 'virtualNetwork')]",
+        "properties": {
+          "subnetResourceId": "[resourceId(parameters('vnetNameRgName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('functionSubnetName'))]",
+          "swiftSupported": true
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+        ]
+      },
+      {
+        "type": "Microsoft.Network/privateEndpoints",
+        "apiVersion": "2022-05-01",
+        "name": "[variables('privateEndpointFunctionAppName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "subnet": {
+            "id": "[resourceId(parameters('vnetNameRgName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
+          },
+          "privateLinkServiceConnections": [
+            {
+              "name": "MyFunctionAppPrivateLinkConnection",
+              "properties": {
+                "privateLinkServiceId": "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
+                "groupIds": [
+                  "sites"
+                ]
+              }
+            }
+          ]
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
 
-        {
+        ]
+      },
+      {
+        "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+        "apiVersion": "2022-05-01",
+        "name": "[format('{0}/{1}', variables('privateEndpointFunctionAppName'), 'funcPrivateDnsZoneGroup')]",
+        "properties": {
+          "privateDnsZoneConfigs": [
+            {
+              "name": "config",
+              "properties": {
+                "privateDnsZoneId": "[resourceId(parameters('functionPrivateDNSZoneResourceGroupName'), 'Microsoft.Network/privateDnsZones', variables('privateFunctionAppDnsZoneName'))]"
+              }
+            }
+          ]
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointFunctionAppName'))]"
+          
+        ]
+      },
+      {
             "apiVersion": "2018-01-01-preview",
             "name": "[variables('openlineageEventHubNameSpaceName')]",
             "type": "Microsoft.EventHub/namespaces",
@@ -502,12 +536,28 @@
                 ]
             }
         },
-        
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[format('{0}/{1}', parameters('eventHubsNamespacePrivateEndpointName'), 'eventhubPrivateDnsZoneGroup')]",
+            "properties": {
+                "privateDnsZoneConfigs": [
+                {
+                    "name": "config",
+                    "properties": {
+                    "privateDnsZoneId": "[resourceId(parameters('eventHubPrivateDNSZoneResourceGroupName'),'Microsoft.Network/privateDnsZones', variables('eventHubsNamespacePrivateDnsZoneName'))]"
+                    }
+                }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('eventHubsNamespacePrivateEndpointName'))]"
+            ]
+        },
         {
         "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
         "apiVersion": "2021-11-01",
         "name": "[concat(variables('openlineageEventHubNameSpaceName'), '/ListenMessages')]",
-        "tags": "[parameters('resourceTagValues')]",
         "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
                 "[resourceId('Microsoft.Network/privateEndpoints', parameters('eventHubsNamespacePrivateEndpointName'))]"
@@ -523,7 +573,6 @@
             "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
             "apiVersion": "2021-11-01",
             "name": "[concat(variables('openlineageEventHubNameSpaceName'), '/SendMessages')]",
-            "tags": "[parameters('resourceTagValues')]",
             "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
                 "[resourceId('Microsoft.EventHub/namespaces/AuthorizationRules', variables('openlineageEventHubNameSpaceName'),'ListenMessages')]"
@@ -535,47 +584,45 @@
             }
         },
         {
-			"type": "Microsoft.KeyVault/vaults",
-			"name": "[variables('openlineageKeyVaultName')]",
-			"apiVersion": "2019-09-01",
-			"location": "[resourceGroup().location]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"sku": {
-					"family": "A",
-					"name": "Standard"
-				},
-				"tenantId": "[subscription().tenantId]",
-				"accessPolicies": [
-					{
-						"tenantId": "[subscription().tenantid]",
-						"objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2020-06-01', 'full').identity.principalId]",
-						"permissions": {
-							"keys": [],
-							"secrets": [
-								"get"
-							],
-							"certificates": []
-						}
-					}
-				],
-                "networkAcls": {
-                    "bypass": "None",
-                    "defaultAction": "Allow",
-                    "ipRules": []
-                    
-                },
-                "publicNetworkAccess": "Disabled",
-				"enableSoftDelete": false,
-				"enabledForDeployment": false,
-				"enabledForDiskEncryption": false,
-				"enabledForTemplateDeployment": false
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
-			]
-		},
-
+          "type": "Microsoft.KeyVault/vaults",
+          "name": "[variables('openlineageKeyVaultName')]",
+          "apiVersion": "2019-09-01",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "sku": {
+              "family": "A",
+              "name": "Standard"
+            },
+            "tenantId": "[subscription().tenantId]",
+            "accessPolicies": [
+              {
+                "tenantId": "[subscription().tenantid]",
+                "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2020-06-01', 'full').identity.principalId]",
+                "permissions": {
+                  "keys": [],
+                  "secrets": [
+                    "get"
+                  ],
+                  "certificates": []
+                }
+              }
+            ],
+                    "networkAcls": {
+                        "bypass": "None",
+                        "defaultAction": "Allow",
+                        "ipRules": []
+                        
+                    },
+                    "publicNetworkAccess": "Disabled",
+            "enableSoftDelete": false,
+            "enabledForDeployment": false,
+            "enabledForDiskEncryption": false,
+            "enabledForTemplateDeployment": false
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+          ]
+        },
         {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2020-04-01",
@@ -606,132 +653,23 @@
                 ]
             }
         },
-        
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'), variables('EventHubConnectionSecretNameSend'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[listkeys(resourceId('Microsoft.Eventhub/namespaces/authorizationRules',variables('openlineageEventHubNameSpaceName'), 'SendMessages'),'2017-04-01').primaryConnectionString]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'), variables('EventHubConnectionSecretNameListen'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[listkeys(resourceId('Microsoft.Eventhub/namespaces/authorizationRules',variables('openlineageEventHubNameSpaceName'), 'ListenMessages'),'2017-04-01').primaryConnectionString]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.EventHub/namespaces', variables('openlineageEventHubNameSpaceName'))]",
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('storageAccountName'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
-			},
-			"dependsOn": [
-				"[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('functionStorageSecret'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('functionStorageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('functionStorageAccountName')),'2019-06-01').keys[0].value,';EndpointSuffix=','core.windows.net')]"
-			},
-			"dependsOn": [
-				"[concat('Microsoft.Storage/storageAccounts/', parameters('functionStorageAccountName'))]",
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('OLOutputAPIKeySecretName'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[listKeys(concat(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '/host/default'), '2016-08-01').functionKeys.default]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('storageAccountAccessKey'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName')), '2019-04-01').keys[0].value]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('functionStorageAccessKey'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName')), '2019-04-01').keys[0].value]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('clientidkey'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[parameters('clientid')]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		{
-			"type": "Microsoft.KeyVault/vaults/secrets",
-			"apiVersion": "2019-09-01",
-			"name": "[format('{0}/{1}', variables('openlineageKeyVaultName'),variables('clientsecretkey'))]",
-			"tags": "[parameters('resourceTagValues')]",
-			"properties": {
-				"value": "[parameters('clientsecret')]"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
-			]
-		},
-		
         {
-			"apiVersion": "2020-06-01",
-			"name": "pid-1e23d6fb-478f-4b04-bfa3-70db11929652",
-			"type": "Microsoft.Resources/deployments",
-			"properties": {
-				"mode": "Incremental",
-				"template": {
-					"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-					"contentVersion": "1.0.0.0",
-					"resources": []
-				}
-			}
-		}
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[format('{0}/{1}', parameters('keyvaultPrivateEndpointName'), 'keyvaultPrivateDnsZoneGroup')]",
+            "properties": {
+                "privateDnsZoneConfigs": [
+                {
+                    "name": "config",
+                    "properties": {
+                    "privateDnsZoneId": "[resourceId(parameters('keyvaultPrivateDNSZoneResourceGroupName'),'Microsoft.Network/privateDnsZones', variables('keyvaultPrivateDnsZoneName'))]"
+                    }
+                }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('keyvaultPrivateEndpointName'))]"
+            ]
+        }
     ]
-}
+  }
