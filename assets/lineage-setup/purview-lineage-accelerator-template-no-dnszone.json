@@ -9,9 +9,7 @@
       }
     },
     "parameters": {
-       "prefixName": {
-			"type": "string"            
-		  },
+       
       "functionAppName": {
         "type": "string",
         "defaultValue": "[format('func-{0}', uniqueString(resourceGroup().id))]",
@@ -122,6 +120,12 @@
           "description": "The name of the backend Azure storage account used by the Azure Function app."
         }
       },
+      "prefixName": {
+			  "type": "string",
+        "metadata": {
+                "description": "prefix value that can be added to resource name strings."
+            }            
+		  },
       "vnetNameRgName": {
             "type": "String",
             "metadata": {
@@ -130,21 +134,18 @@
       },
       "vnetName": {
         "type": "string",
-        "defaultValue": "[format('vnet-{0}', uniqueString(resourceGroup().id))]",
         "metadata": {
           "description": "The name of the virtual network for virtual network integration."
         }
       },
       "functionSubnetName": {
         "type": "string",
-        "defaultValue": "snet-func",
         "metadata": {
           "description": "The name of the virtual network subnet to be associated with the Azure Function app."
         }
       },
       "privateEndpointSubnetName": {
         "type": "string",
-        "defaultValue": "snet-pe",
         "metadata": {
           "description": "The name of the virtual network subnet used for allocating IP addresses for private endpoints."
         }
@@ -203,11 +204,8 @@
       "eventHubsPublicDNSZoneForwarder": "[if(equals(toLower(environment().name), 'azureusgovernment'), '.servicebus.usgovcloudapi.net', '.servicebus.windows.net')]",
       "eventHubsNamespacePrivateDnsZoneName": "[concat('privatelink', variables('eventHubsPublicDNSZoneForwarder'))]",        
       "keyvaultPrivateEndpointGroupName": "vault",
-      "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net",
-      "functionStorageSecret": "functionStorageSecret",
-      "OLOutputAPIKeySecretName": "Ol-Output-Api-Key",
-		  "storageAccountAccessKey": "storageAccessKey",
-      "functionStorageAccessKey": "functionStorageAccessKey"
+      "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net"
+
     },
     "resources": [
       {
