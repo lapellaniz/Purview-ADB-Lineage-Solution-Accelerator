@@ -43,7 +43,9 @@ then
     echo "Resource Group is not empty. Please create new resource group. Skipping resource provisioning."
 else
     echo "Deploying lineage accelerator ARM template..."
-    az deployment group create --resource-group $resourceGroupName --template-file ./purview-lineage-accelerator-template.json
+    az deployment group create --resource-group $resourceGroupName --template-file ./purview-lineage-accelerator-template-no-dnszone.json
+    echo "Deploying Key Vault Secrets..."
+    az deployment group create --resource-group $resourceGroupName --template-file ./purview-lineage-accelerator-template-akv-secrets.json
 fi
 
 

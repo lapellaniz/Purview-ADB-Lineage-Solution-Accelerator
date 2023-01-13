@@ -46,6 +46,7 @@ else {
      echo "Deploying lineage accelerator ARM template..."
      $lineage_template_path = (Split-Path $PSScriptRoot) + "\purview-lineage-accelerator-template-no-dnszone.json"
      az deployment group create --resource-group $resourceGroupName --template-file $lineage_template_path
+     echo "Deploying key vault Secrets..."
      $lineage_secrets_template_path = (Split-Path $PSScriptRoot) + "\purview-lineage-accelerator-template-akv-secrets.json"
      az deployment group create --resource-group $resourceGroupName --template-file $lineage_secrets_template_path
 }
