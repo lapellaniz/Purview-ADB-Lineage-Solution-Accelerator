@@ -58,10 +58,10 @@
                 "description": "Existing storage account name to be used for Synapse workspace"
             }
         },
-        "existing_storageAccount_synapse_workspace_filesystem": {
+        "storageAccount_synapse_workspace_filesystem": {
             "type": "String",
              "metadata": {
-                "description": "File System name for Synapse workspace storage account"
+                "description": "Existing or new File System name for Synapse workspace storage account"
             }
         },          
         "spark_pool_name": {
@@ -248,7 +248,7 @@
                     "resourceId": "[resourceId(parameters('existing_storageAccount_rg'), 'Microsoft.Storage/storageAccounts', parameters('existing_storageAccount_synapse_workspace'))]",
                     "createManagedPrivateEndpoint": true,
                     "accountUrl": "[concat('https://',parameters('existing_storageAccount_synapse_workspace'),'.dfs.core.windows.net')]",
-                    "filesystem": "[parameters('existing_storageAccount_synapse_workspace_filesystem')]"
+                    "filesystem": "[parameters('storageAccount_synapse_workspace_filesystem')]"
                 },
                 "encryption": {},
                 "managedVirtualNetwork": "default",
