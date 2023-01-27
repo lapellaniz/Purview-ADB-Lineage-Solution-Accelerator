@@ -1,0 +1,352 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+       
+         "rg_name": {
+            "type": "String",
+             "metadata": {
+                "description": "Synapse workspace Resource Group name"
+            }
+        },
+        "vnetNameRgName": {
+                "type": "String",
+                "metadata": {
+                    "description": "The name of the resource group containing the virtual network for virtual network integration."
+                }
+        },
+        "vnetName": {
+            "type": "string",
+            "metadata": {
+            "description": "The name of the virtual network for virtual network integration."
+            }
+        },
+        "privateEndpointSubnetName": {
+            "type": "string",
+            "metadata": {
+            "description": "The name of the virtual network subnet used for allocating IP addresses for private endpoints."
+            }
+        },
+        
+        "sqlPrivateDNSZoneResourceGroupName": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource group name where privatelink.sql.azuresynapse.net Private DNS Zone exists"
+			}
+		},
+        "workspacePrivateDNSZoneResourceGroupName": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource group name where privatelink.dev.azuresynapse.net Private DNS Zone exists"
+			}
+		},
+        "synapse_workspace_name": {
+            "type": "String",
+             "metadata": {
+                "description": "Synapse workspace name"
+            }
+        },
+        "existing_storageAccount_rg": {
+            "type": "String",
+             "metadata": {
+                "description": "Existing storage account resouce group name to be used for Synapse workspace"
+            }
+        },
+        "existing_storageAccount_synapse_workspace": {
+            "type": "String",
+             "metadata": {
+                "description": "Existing storage account name to be used for Synapse workspace"
+            }
+        },
+        "existing_storageAccount_synapse_workspace_filesystem": {
+            "type": "String",
+             "metadata": {
+                "description": "File System name for Synapse workspace storage account"
+            }
+        },          
+        "spark_pool_name": {
+            "defaultValue": "sparkpool1",
+            "type": "String",
+             "metadata": {
+                "description": "spark pool name in Synapse workspace"
+            }
+        },
+        "privateEndpoints_sql_pe_name": {
+            "type": "String",
+            "metadata": {
+                "description": "SQL private endpoint name"
+            }
+        },
+        "privateEndpoints_serverless_pe_name": {
+            "type": "String",
+            "metadata": {
+                "description": "SQL Serverless private endpoint name"
+            }
+        },
+        "privateEndpoints_workspace_pe_name": {
+            "type": "String",
+            "metadata": {
+                "description": "workspace private endpoint name"
+            }
+        }
+
+    },
+    "variables": {
+        "uniqueName": "[substring(uniqueString(parameters('rg_name')),0,4)]",
+        "privateStorageSqlDnsZoneName": "privatelink.sql.azuresynapse.net",
+        "privateStorageDevDnsZoneName": "privatelink.dev.azuresynapse.net"
+    },
+    "resources": [
+       
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('privateEndpoints_sql_pe_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpoints_sql_pe_name')]",
+                        "id": "[concat(resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_sql_pe_name')), concat('/privateLinkServiceConnections/', parameters('privateEndpoints_sql_pe_name')))]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]",
+                            "groupIds": [
+                                "Sql"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "customNetworkInterfaceName": "[concat(parameters('privateEndpoints_sql_pe_name'), '-nic')]",
+                 "subnet": {
+                    "id": "[resourceId(parameters('vnetNameRgName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
+                },
+                "ipConfigurations": [],
+                "customDnsConfigs": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('privateEndpoints_serverless_pe_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpoints_serverless_pe_name')]",
+                        "id": "[concat(resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_serverless_pe_name')), concat('/privateLinkServiceConnections/', parameters('privateEndpoints_serverless_pe_name')))]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]",
+                            "groupIds": [
+                                "SqlOnDemand"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "customNetworkInterfaceName": "[concat(parameters('privateEndpoints_serverless_pe_name'), '-nic')]",
+                 "subnet": {
+                    "id": "[resourceId(parameters('vnetNameRgName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
+                },
+                "ipConfigurations": [],
+                "customDnsConfigs": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('privateEndpoints_sql_pe_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_sql_pe_name'))]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+                    {
+                        "name": "privatelink-sql-azuresynapse-net",
+                        "properties": {
+                            "privateDnsZoneId": "[resourceId(parameters('sqlPrivateDNSZoneResourceGroupName'), 'Microsoft.Network/privateDnsZones', variables('privateStorageSqlDnsZoneName'))]"
+                        }
+                    }
+                ]
+            }
+        },
+        
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('privateEndpoints_workspace_pe_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                    {
+                        "name": "[parameters('privateEndpoints_sql_pe_name')]",
+                        "id": "[concat(resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_workspace_pe_name')), concat('/privateLinkServiceConnections/', parameters('privateEndpoints_workspace_pe_name')))]",
+                        "properties": {
+                            "privateLinkServiceId": "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]",
+                            "groupIds": [
+                                "Dev"
+                            ],
+                            "privateLinkServiceConnectionState": {
+                                "status": "Approved"
+                            }
+                        }
+                    }
+                ],
+                "manualPrivateLinkServiceConnections": [],
+                "customNetworkInterfaceName": "[concat(parameters('privateEndpoints_workspace_pe_name'), '-nic')]",
+                 "subnet": {
+                    "id": "[resourceId(parameters('vnetNameRgName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
+                },
+                "ipConfigurations": [],
+                "customDnsConfigs": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('privateEndpoints_workspace_pe_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_workspace_pe_name'))]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+                    {
+                        "name": "privatelink-sql-azuresynapse-net",
+                        "properties": {
+                            "privateDnsZoneId": "[resourceId(parameters('workspacePrivateDNSZoneResourceGroupName'), 'Microsoft.Network/privateDnsZones', variables('privateStorageDevDnsZoneName'))]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Synapse/workspaces",
+            "apiVersion": "2021-06-01",
+            "name": "[parameters('synapse_workspace_name')]",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "dependsOn": [],
+            "properties": {
+                "defaultDataLakeStorage": {
+                    "resourceId": "[resourceId(parameters('existing_storageAccount_rg'), 'Microsoft.Storage/storageAccounts', parameters('existing_storageAccount_synapse_workspace'))]",
+                    "createManagedPrivateEndpoint": true,
+                    "accountUrl": "[concat('https://',parameters('existing_storageAccount_synapse_workspace'),'.dfs.core.windows.net')]",
+                    "filesystem": "[parameters('existing_storageAccount_synapse_workspace_filesystem')]"
+                },
+                "encryption": {},
+                "managedVirtualNetwork": "default",
+                "connectivityEndpoints": {
+                    "web": "[concat('https://web.azuresynapse.net?workspace=%2fsubscriptions%2f',subscription().subscriptionId,'%2fresourceGroups%2f', parameters('rg_name'), '%2fproviders%2fMicrosoft.Synapse%2fworkspaces%2f', parameters('synapse_workspace_name'))]",
+                    "dev": "[concat('https://', parameters('synapse_workspace_name'), '.dev.azuresynapse.net')]",
+                    "sqlOnDemand": "[concat(parameters('synapse_workspace_name'), '-ondemand.sql.azuresynapse.net')]",
+                    "sql": "[concat(parameters('synapse_workspace_name'), '.sql.azuresynapse.net')]"
+                },
+                "managedResourceGroupName": "[concat('synapseworkspace-managedrg-', variables('uniqueName'))]",
+                "sqlAdministratorLogin": "anildwa",
+                "privateEndpointConnections": [
+                    
+              
+                ],
+                "managedVirtualNetworkSettings": {
+                    "preventDataExfiltration": false,
+                    "allowedAadTenantIdsForLinking": []
+                },
+                "publicNetworkAccess": "Disabled",
+                "cspWorkspaceAdminProperties": {
+                    "initialWorkspaceAdminObjectId": "19dd504a-49a2-4e4e-a4ac-a0b783e54053"
+                },
+                "azureADOnlyAuthentication": false,
+                "trustedServiceBypassEnabled": false
+            }
+        },
+        
+        {
+            "type": "Microsoft.Synapse/workspaces/azureADOnlyAuthentications",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('synapse_workspace_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]"
+            ],
+            "properties": {
+                "azureADOnlyAuthentication": false
+            }
+        },
+        {
+            "type": "Microsoft.Synapse/workspaces/bigDataPools",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('synapse_workspace_name'), '/', parameters('spark_pool_name'))]",
+            "location": "westus2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]"
+            ],
+            "properties": {
+                "sparkVersion": "3.2",
+                "nodeCount": 3,
+                "nodeSize": "Small",
+                "nodeSizeFamily": "MemoryOptimized",
+                "autoScale": {
+                    "enabled": false,
+                    "minNodeCount": 3,
+                    "maxNodeCount": 10
+                },
+                "autoPause": {
+                    "enabled": true,
+                    "delayInMinutes": 15
+                },
+                "isComputeIsolationEnabled": false,
+                "sparkConfigProperties": {
+                },
+                "sessionLevelPackagesEnabled": false,
+                "cacheSize": 50,
+                "dynamicExecutorAllocation": {
+                    "enabled": false
+                },
+                "isAutotuneEnabled": false,
+                "provisioningState": "DeleteError"
+            }
+        },
+        {
+            "type": "Microsoft.Synapse/workspaces/integrationruntimes",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('synapse_workspace_name'), '/AutoResolveIntegrationRuntime')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse_workspace_name'))]"
+            ],
+            "properties": {
+                "type": "Managed",
+                "typeProperties": {
+                    "computeProperties": {
+                        "location": "AutoResolve",
+                        "dataFlowProperties": {
+                            "computeType": "General",
+                            "coreCount": 8,
+                            "timeToLive": 0
+                        }
+                    }
+                },
+                "managedVirtualNetwork": {
+                    "referenceName": "default",
+                    "type": "ManagedVirtualNetworkReference",
+                    "id": "a54c41a5-99ea-44d3-b32a-eeabf65eaccf"
+                }
+            }
+        }
+    ]
+}
