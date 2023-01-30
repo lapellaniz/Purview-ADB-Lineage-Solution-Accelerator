@@ -61,7 +61,7 @@ jobs:
     - name: Display structure of downloaded files
       run: | 
         mkdir ~/artifact 
-        Compress-Archive -Path D:/a/Purview-ADB-Lineage-Solution-Accelerator/Purview-ADB-Lineage-Solution-Accelerator/function-app/adb-to-purview/src/bin/Debug/net6.0/publish/* -DestinationPath ~/artifact/FunctionZip.zip
+        Compress-Archive -Path D:/a/Purview-ADB-Lineage-Solution-Accelerator/Purview-ADB-Lineage-Solution-Accelerator/function-app/adb-to-purview/src/bin/Debug/net6.0/publish/* -DestinationPath ~/artifact/FunctionZip-${{ env.GITHUB_REF }}.zip
       
     - name: Upload Function Zip Build Artifact
       uses: actions/upload-artifact@v3
