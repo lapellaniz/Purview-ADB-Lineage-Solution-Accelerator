@@ -41,6 +41,7 @@ namespace AdbToPurview.Function
                 //Check if event is from Azure Synapse Spark Pools
                 if(_event.Job.Namespace.Contains("azuresynapsespark") && _event.EventType == "COMPLETE")
                 {
+                    _logger.LogInformation($"PurviewOut-ParserService:Processing lineage for Synapse Workspace {_event.Job.Namespace.Split(",")[0]}");
                     var purviewSynapseEvent1 = _olToPurviewParsingService.GetParentEntity(_event);
                     _logger.LogInformation($"PurviewOut-ParserService: {purviewSynapseEvent1}");
                     var jObjectPurviewEvent1 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent1!) ?? new JObject();

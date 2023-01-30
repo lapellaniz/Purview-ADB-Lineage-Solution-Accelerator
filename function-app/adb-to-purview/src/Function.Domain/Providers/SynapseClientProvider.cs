@@ -79,13 +79,13 @@ namespace Function.Domain.Providers
             {
                 // Invalid scope. The scope has to be of the form "https://resourceurl/.default"
                 // Mitigation: change the scope to be as expected
-                _log.LogError("Error getting Authentication Token for Databricks API");
+                _log.LogError("Error getting Authentication Token for Synapse Workspace API");
                 return;
             }
             catch (Exception coreex)
             {
 
-                _log.LogError($"Error getting Authentication Token for Databricks API");
+                _log.LogError($"Error getting Authentication Token for Synapse Workspace API");
                 _log.LogError(coreex.Message);
                 return;
             }
