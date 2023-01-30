@@ -66,8 +66,8 @@ jobs:
     - name: Upload Function Zip Build Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: FunctionZip
-        path: ~/artifact/FunctionZip.zip
+        name: FunctionZip-${{ env.GITHUB_REF }}
+        path: ~/artifact/FunctionZip-${{ env.GITHUB_REF }}.zip
 
   runIntegrationTests:
     if: ${{ false }}
@@ -164,14 +164,14 @@ jobs:
     - name: Download Artifact
       uses: actions/download-artifact@v3
       with:
-        name: FunctionZip
+        name: FunctionZip-${{ env.GITHUB_REF }}
         path: ~/artifacts
 
     - name: Create Release
       uses: ncipollo/release-action@v1
       if: github.ref_type == 'tag'
       with:
-        artifacts: ~/artifacts/FunctionZip.zip
+        artifacts: ~/artifacts/FunctionZip-${{ env.GITHUB_REF }}.zip
         token: ${{ secrets.GITHUB_TOKEN }}
 
   deployProductionEnvironment:
