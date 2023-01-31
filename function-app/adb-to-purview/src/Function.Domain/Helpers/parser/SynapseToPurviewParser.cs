@@ -131,6 +131,8 @@ namespace Function.Domain.Helpers
             synapseProcess.Attributes.SparkPoolName = synapseNotebook.Attributes.SparkPoolName;
             synapseProcess.Attributes.User = synapseNotebook.Attributes.User;
             synapseProcess.Attributes.SparkVersion = synapseNotebook.Attributes.SparkVersion;
+            synapseProcess.Attributes.Inputs = inputs;
+            synapseProcess.Attributes.Outputs = outputs;
             synapseProcess.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser!.GetColIdentifiers());
             synapseProcess.RelationshipAttributes.Notebook.QualifiedName = sparkNotebookQn; 
             return synapseProcess;

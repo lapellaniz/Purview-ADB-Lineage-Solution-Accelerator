@@ -96,7 +96,7 @@
       },
       "functionAppPlanSku": {
         "type": "string",
-        "defaultValue": "EP1",
+        "defaultValue": "EP2",
         "allowedValues": [
           "EP1",
           "EP2",
@@ -204,7 +204,11 @@
       "eventHubsPublicDNSZoneForwarder": "[if(equals(toLower(environment().name), 'azureusgovernment'), '.servicebus.usgovcloudapi.net', '.servicebus.windows.net')]",
       "eventHubsNamespacePrivateDnsZoneName": "[concat('privatelink', variables('eventHubsPublicDNSZoneForwarder'))]",        
       "keyvaultPrivateEndpointGroupName": "vault",
-      "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net"
+      "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net",
+      "functionStorageSecret": "functionStorageSecret",
+      "OLOutputAPIKeySecretName": "Ol-Output-Api-Key",
+		  "storageAccountAccessKey": "storageAccessKey",
+      "functionStorageAccessKey": "functionStorageAccessKey"
 
     },
     "resources": [
@@ -284,6 +288,11 @@
         "apiVersion": "2022-03-01",
         "name": "[parameters('functionAppPlanName')]",
         "location": "[parameters('location')]",
+        "dependsOn":[
+          "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+          "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', parameters('eventHubsNamespacePrivateEndpointName'), 'eventhubPrivateDnsZoneGroup')]",
+          "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]"
+        ],
         "sku": {
           "tier": "ElasticPremium",
           "name": "[parameters('functionAppPlanSku')]",
@@ -292,7 +301,8 @@
         },
         "kind": "elastic",
         "properties": {
-          "maximumElasticWorkerCount": 20,
+          "maximumElasticWorkerCount": 1,
+          "functionAppScaleLimit ": 1,
           "reserved": "[variables('isReserved')]"
         }
       },
@@ -341,7 +351,7 @@
               },
               {
                 "name": "WEBSITE_RUN_FROM_PACKAGE",
-                "value": "https://github.com/anildwarepo/Purview-ADB-Lineage-Solution-Accelerator/releases/download/v2.2.2/FunctionZip.zip"
+                "value": "https://github.com/anildwarepo/Purview-ADB-Lineage-Solution-Accelerator/releases/download/v2.2.3/FunctionZip.zip"
               },
               {
                   "name": "EventHubName",
@@ -378,6 +388,10 @@
               {
                   "name": "TenantId",
                   "value": "[subscription().tenantId]"
+              },
+              {
+                  "name": "usePurviewTypes",
+                  "value": "true"
               } 
               
             ]
@@ -387,7 +401,9 @@
           "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
           "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppPlanName'))]",
           "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+          "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', parameters('eventHubsNamespacePrivateEndpointName'), 'eventhubPrivateDnsZoneGroup')]",
           "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionStorageAccountName'))]"
+
         ]
       },
       {
@@ -471,7 +487,7 @@
                 ],
                 "properties": {
                     "messageRetentionInDays": 1,
-				"partitionCount": 1
+				            "partitionCount": 1
 				
                 },
                 "resources": [
@@ -618,7 +634,9 @@
             "enabledForTemplateDeployment": false
           },
           "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+            "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
+            "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', variables('privateEndpointStorageBlobName'), 'blobPrivateDnsZoneGroup')]",
+            "[resourceId('Microsoft.Network/privateEndpoints/privateDnsZoneGroups', parameters('eventHubsNamespacePrivateEndpointName'), 'eventhubPrivateDnsZoneGroup')]"
           ]
         },
         {
@@ -669,5 +687,6 @@
                 "[resourceId('Microsoft.Network/privateEndpoints', parameters('keyvaultPrivateEndpointName'))]"
             ]
         }
+        
     ]
   }
