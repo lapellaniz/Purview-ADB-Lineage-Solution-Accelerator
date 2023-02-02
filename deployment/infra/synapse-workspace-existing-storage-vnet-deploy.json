@@ -132,6 +132,24 @@
             }
         },
         {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('privateEndpoints_sql_pe_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_sql_pe_name'))]"
+            ],
+            "properties": {
+                "privateDnsZoneConfigs": [
+                    {
+                        "name": "privatelink-sql-azuresynapse-net",
+                        "properties": {
+                            "privateDnsZoneId": "[resourceId(parameters('sqlPrivateDNSZoneResourceGroupName'), 'Microsoft.Network/privateDnsZones', variables('privateStorageSqlDnsZoneName'))]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Network/privateEndpoints",
             "apiVersion": "2022-05-01",
             "name": "[parameters('privateEndpoints_serverless_pe_name')]",
@@ -167,9 +185,9 @@
         {
             "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
             "apiVersion": "2022-05-01",
-            "name": "[concat(parameters('privateEndpoints_sql_pe_name'), '/default')]",
+            "name": "[concat(parameters('privateEndpoints_serverless_pe_name'), '/default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_sql_pe_name'))]"
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('privateEndpoints_serverless_pe_name'))]"
             ],
             "properties": {
                 "privateDnsZoneConfigs": [
@@ -182,6 +200,7 @@
                 ]
             }
         },
+        
         
         {
             "type": "Microsoft.Network/privateEndpoints",
@@ -318,8 +337,7 @@
                 "dynamicExecutorAllocation": {
                     "enabled": false
                 },
-                "isAutotuneEnabled": false,
-                "provisioningState": "DeleteError"
+                "isAutotuneEnabled": false
             }
         },
         {
