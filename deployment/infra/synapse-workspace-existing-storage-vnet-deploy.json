@@ -88,6 +88,12 @@
             "metadata": {
                 "description": "workspace private endpoint name"
             }
+        },
+        "sqlAdminUserName": {
+            "type": "String",
+            "metadata": {
+                "description": "Sql admin user name"
+            }
         }
 
     },
@@ -278,7 +284,7 @@
                     "sql": "[concat(parameters('synapse_workspace_name'), '.sql.azuresynapse.net')]"
                 },
                 "managedResourceGroupName": "[concat('synapseworkspace-managedrg-', variables('uniqueName'))]",
-                "sqlAdministratorLogin": "anildwa",
+                "sqlAdministratorLogin": "[parameters('sqlAdminUserName')]",
                 "privateEndpointConnections": [
                     
               
