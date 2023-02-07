@@ -514,7 +514,8 @@
               "family": "A",
               "name": "Standard"
             },
-            "tenantId": "[subscription().tenantId]",            
+            "tenantId": "[subscription().tenantId]",      
+            "accessPolicies": [],      
             "networkAcls": {
                 "bypass": "None",
                 "defaultAction": "Allow",
