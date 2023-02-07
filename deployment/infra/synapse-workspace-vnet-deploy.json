@@ -51,6 +51,12 @@
 				"description": "Resource group name where privatelink.dev.azuresynapse.net Private DNS Zone exists"
 			}
 		},
+        "keyvaultPrivateDNSZoneResourceGroupName": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource group name where privatelink.vaultcore.azure.net Private DNS Zone exists"
+			}
+		},
         "synapse_workspace_name": {
             "type": "String",
              "metadata": {
@@ -99,6 +105,13 @@
             "metadata": {
                 "description": "Sql admin user name"
             }
+        },
+        "keyvaultPrivateEndpointName": {
+          "type": "string",
+          "defaultValue": "KeyVaultPrivateEndpoint",
+          "metadata": {
+              "description": "Specifies the name of the private link to the key vault."
+          }
         }
 
     },
@@ -109,7 +122,10 @@
         "privateStorageBlobDnsZoneName": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
         "privateStorageDfsDnsZoneName": "[format('privatelink.dfs.{0}', environment().suffixes.storage)]",
         "privateStorageSqlDnsZoneName": "privatelink.sql.azuresynapse.net",
-        "privateStorageDevDnsZoneName": "privatelink.dev.azuresynapse.net"
+        "privateStorageDevDnsZoneName": "privatelink.dev.azuresynapse.net",
+        "openlineageKeyVaultName": "[concat('keyvault',variables('uniqueName'))]",
+        "keyvaultPrivateEndpointGroupName": "vault",
+        "keyvaultPrivateDnsZoneName": "privatelink.vaultcore.azure.net"
     },
     "resources": [
             {
@@ -487,6 +503,79 @@
                     "id": "a54c41a5-99ea-44d3-b32a-eeabf65eaccf"
                 }
             }
+        },
+        {
+          "type": "Microsoft.KeyVault/vaults",
+          "name": "[variables('openlineageKeyVaultName')]",
+          "apiVersion": "2019-09-01",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "sku": {
+              "family": "A",
+              "name": "Standard"
+            },
+            "tenantId": "[subscription().tenantId]",            
+            "networkAcls": {
+                "bypass": "None",
+                "defaultAction": "Allow",
+                "ipRules": []
+                
+            },
+            "publicNetworkAccess": "Disabled",
+            "enableSoftDelete": false,
+            "enabledForDeployment": false,
+            "enabledForDiskEncryption": false,
+            "enabledForTemplateDeployment": false
+          },
+          "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('keyvaultPrivateEndpointName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]"
+            ],
+            "properties": {
+                "privateLinkServiceConnections": [
+                {
+                    "name": "[parameters('keyvaultPrivateEndpointName')]",
+                    "properties": {
+                    "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('openlineageKeyVaultName'))]",
+                    "groupIds": [
+                        "[variables('keyvaultPrivateEndpointGroupName')]"
+                    ]
+                    }
+                }
+                ],
+                "subnet": {
+                "id": "[resourceId(parameters('vnetNameRgName'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('privateEndpointSubnetName'))]"
+                },
+                "customDnsConfigs": [
+                {
+                    "fqdn": "[concat(variables('openlineageKeyVaultName'), '.vault.azure.net')]"
+                }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+            "apiVersion": "2022-05-01",
+            "name": "[format('{0}/{1}', parameters('keyvaultPrivateEndpointName'), 'keyvaultPrivateDnsZoneGroup')]",
+            "properties": {
+                "privateDnsZoneConfigs": [
+                {
+                    "name": "config",
+                    "properties": {
+                    "privateDnsZoneId": "[resourceId(parameters('keyvaultPrivateDNSZoneResourceGroupName'),'Microsoft.Network/privateDnsZones', variables('keyvaultPrivateDnsZoneName'))]"
+                    }
+                }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateEndpoints', parameters('keyvaultPrivateEndpointName'))]"
+            ]
         }
     ]
 }
