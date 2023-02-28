@@ -26,6 +26,13 @@ namespace Function.Domain.Models.Settings
         public bool usePurviewTypes { get; set; } = false;
         public bool useResourceSet { get; set; } = true;
         public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/";
+
+        public string OpenAIEndpoint {get;set;}
+        public string OpenAIKey {get;set;}
+        public string OpenAIDeploymentName {get;set;}
+
+        public int OpenAIMaxTokens {get;set;}
+
         public string Authority
         {
             get
@@ -38,6 +45,8 @@ namespace Function.Domain.Models.Settings
         public string ResourceUri { get; set; } = "https://purview.azure.com";
         public string purviewApiEndPoint { get; set; } = "{ResourceUri}/catalog/api";
         public string purviewApiEntityBulkMethod { get; set; } = "/atlas/v2/entity/bulk";
+
+        //public string purviewApiEntityBulkMethod { get; set; } = "/collections/testcollection/entity/bulk?api-version=2023-02-01-preview";
         public string purviewApiEntityByGUIDMethod { get; set; } = "/atlas/v2/entity/guid/";
         public string purviewApiEntityByTypeMethod { get; set; } = "/atlas/v2/entity/bulk/uniqueAttribute/type/";
         public string purviewApiEntityQueryMethod { get; set; } = "/search/query?api-version=2021-05-01-preview";

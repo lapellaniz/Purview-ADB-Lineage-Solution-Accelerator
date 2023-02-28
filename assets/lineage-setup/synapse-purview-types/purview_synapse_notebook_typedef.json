@@ -25,6 +25,17 @@
                 "includeInNotification": false
             },
             {
+                "name": "sourceCodeExplaination",
+                "typeName": "string",
+                "isOptional": true,
+                "cardinality": "SINGLE",
+                "valuesMinCount": 0,
+                "valuesMaxCount": 1,
+                "isUnique": false,
+                "isIndexable": false,
+                "includeInNotification": false
+            },
+            {
                 "name": "user",
                 "typeName": "string",
                 "isOptional": true,

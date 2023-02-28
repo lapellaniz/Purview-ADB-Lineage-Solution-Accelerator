@@ -31,6 +31,9 @@ namespace Function.Domain.Models.Purview
         [JsonProperty("sparkVersion")]
         public string SparkVersion = ""; 
 
+        [JsonProperty("sourceCodeExplaination")]
+        public string SourceCodeExplaination = "";
+
         [JsonProperty("columnMapping")]
         public string ColumnMapping = "";  
         

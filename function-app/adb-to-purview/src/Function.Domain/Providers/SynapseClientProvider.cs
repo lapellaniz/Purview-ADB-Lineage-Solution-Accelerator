@@ -5,14 +5,15 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
 using Function.Domain.Models.Adb;
 using Function.Domain.Models.Settings;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
 using Function.Domain.Models.SynapseSpark;
+using System.Text;
+using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace Function.Domain.Providers
 {
@@ -108,7 +109,7 @@ namespace Function.Domain.Providers
                 
                 if (_bearerToken is null)
                 {
-                    _log.LogError("AdbClient-GetSingleAdbJobAsync: unable to get bearer token");
+                    _log.LogError("SynapseClient-GetSynapseJobAsync: unable to get bearer token");
                     return null;
                 }
             }
@@ -129,7 +130,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"AdbClient-GetSingleAdbJobAsync: error, message: {ex.Message}");
+                _log.LogError(ex, $"SynapseClient-GetSynapseJobAsync: error, message: {ex.Message}");
             }
             return resultSynapseRoot;
         }
@@ -142,7 +143,7 @@ namespace Function.Domain.Providers
                 
                 if (_bearerToken is null)
                 {
-                    _log.LogError("AdbClient-GetSingleAdbJobAsync: unable to get bearer token");
+                    _log.LogError("SynapseClient-GetSynapseSparkPoolsAsync: unable to get bearer token");
                     return null;
                 }
             }
@@ -164,9 +165,114 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"AdbClient-GetSingleAdbJobAsync: error, message: {ex.Message}");
+                _log.LogError(ex, $"SynapseClient-GetSynapseSparkPoolsAsync: error, message: {ex.Message}");
             }
             return resultSynapseSparkPool;
+        }
+
+
+        /// get synapse spark notebook source
+        public async Task<string> GetSparkNotebookSource(string synapseWorkspaceName, string sparkNoteBookName) 
+        {
+            if(config?.OpenAIEndpoint is null)
+            {
+                _log.LogError("SynapseClient-GetSparkNotebookSource: OpenAIEndpoint is null");
+                return string.Empty;
+            }
+
+            if (isTokenExpired(_bearerToken))
+            {
+                await GetBearerTokenAsync();
+                
+                if (_bearerToken is null)
+                {
+                    _log.LogError("SynapseClient-GetSparkNotebookSource: unable to get bearer token");
+                    return string.Empty;
+                }
+            }
+            var request = new HttpRequestMessage() {
+                
+                RequestUri = new Uri($"https://{synapseWorkspaceName}.dev.azuresynapse.net/notebooks/{sparkNoteBookName}?api-version=2020-12-01"),
+                Method = HttpMethod.Get,
+            };
+            request.Headers.Authorization  =
+                new AuthenticationHeaderValue("Bearer", _bearerToken!.RawData);
+
+            SynapseSparkNoteBook? resultSynapseSparkNoteBook = null;
+           try {
+                var tokenResponse = await _client.SendAsync(request);
+
+                tokenResponse.EnsureSuccessStatusCode();
+                resultSynapseSparkNoteBook = JsonConvert.DeserializeObject<SynapseSparkNoteBook>(tokenResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                string sparkNoteBookSource = "";
+
+                if(resultSynapseSparkNoteBook?.Properties?.Cells is not null)
+                {
+                    foreach (var item in resultSynapseSparkNoteBook.Properties.Cells)
+                    {
+                        if (item?.CellType == "code")
+                        {
+                            foreach(var line in item.Source)
+                            {
+                                sparkNoteBookSource += line;
+                            }
+                            
+                        }
+                    }
+                }
+                return await GetOpenAICompletions(sparkNoteBookSource);
+               
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"SynapseClient-GetSparkNotebookSource: error, message: {ex.Message}");
+                return ex.Message;
+                
+            }
+            
+            
+        }
+
+        private async Task<string> GetOpenAICompletions(string sparkNotebookSource)
+        {
+            
+            
+                
+            string openAIUri = $"{config?.OpenAIEndpoint}/openai/deployments/{config?.OpenAIDeploymentName}/completions?api-version=2022-12-01";
+              
+            //_client.DefaultRequestHeaders.Authorization  = new AuthenticationHeaderValue("api-key", config?.OpenAIKey);
+            var requestBody = new { 
+                    prompt = "Explain this python code:\n\n" + sparkNotebookSource + "\n\n",
+                    max_tokens = config?.OpenAIMaxTokens
+                };
+            var request = new HttpRequestMessage() {
+                
+                RequestUri = new Uri(openAIUri),
+                Method = HttpMethod.Post,
+                Content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json")
+            };
+            request.Headers.Add("api-key", config?.OpenAIKey);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
+
+
+            try{
+                //string requestBodyJson = System.Text.Json.JsonSerializer.Serialize(requestBody);
+                //var requestBodyContent = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
+                
+                var tokenResponse = await _client.SendAsync(request);
+                tokenResponse?.EnsureSuccessStatusCode();
+                var resultFromOpenAI = JsonConvert.DeserializeObject<OpenAICompletionResponse>(tokenResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                return resultFromOpenAI?.Choices[0]?.Text;
+               
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"SynapseClient-GetOpenAICompletions: error, message: {ex.Message}");
+                return "Could not get source code explaination.";
+                
+            }
+
         }
 
         private bool isTokenExpired(JwtSecurityToken? jwt)
@@ -177,7 +283,7 @@ namespace Function.Domain.Providers
             }
             if (jwt.ValidTo > DateTime.Now.AddMinutes(3))
             {
-                _log.LogInformation("AdbClient-isTokenExpired: Token cache hit");
+                _log.LogInformation("SynapseClient-isTokenExpired: Token cache hit");
                 return false;
             }
             return true;

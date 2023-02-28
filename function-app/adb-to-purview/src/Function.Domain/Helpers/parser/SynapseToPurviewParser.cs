@@ -97,13 +97,14 @@ namespace Function.Domain.Helpers
             
             string notebookPath = $"authoring/analyze/notebooks/{sparkNoteBookName}";
                        
-            
+            var result = _synapseClientProvider.GetSparkNotebookSource(_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0], sparkNoteBookName).GetAwaiter().GetResult();
 
             synapseNotebook.Attributes.Name = sparkNoteBookName;
             synapseNotebook.Attributes.QualifiedName = $"{workspaceQn}/{notebookPath.Trim('/')}";
             synapseNotebook.Attributes.SparkPoolName = sparkClusterName;
             synapseNotebook.Attributes.User = _eEvent!.SynapseRoot!.SparkJobs![0].Submitter!;
             synapseNotebook.Attributes.SparkVersion = _eEvent!.SynapseSparkPool!.Properties!.SparkVersion!;
+            synapseNotebook.Attributes.SourceCodeExplaination = result;
             //synapseNotebook.Attributes.Inputs = inputs;
             //synapseNotebook.Attributes.Outputs = outputs;
             synapseNotebook.RelationshipAttributes.Workspace.QualifiedName = workspaceQn;
@@ -138,7 +139,7 @@ namespace Function.Domain.Helpers
             return synapseProcess;
         }
 
-       
+    
 
         private SynapseProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent)
         {
@@ -154,6 +155,12 @@ namespace Function.Domain.Helpers
             return pa;
         }
 
+
+        private async Task GetSynapseSparkNotebookSource(string synapseWorksaceName, string sparkNotebookName)
+        {
+            
+        }
+      
         private InputOutput GetInputOutputs(IInputsOutputs inOut)
         {
             var id = _qnParser!.GetIdentifiers(inOut.NameSpace,inOut.Name);
