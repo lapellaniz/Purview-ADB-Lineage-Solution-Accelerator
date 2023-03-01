@@ -156,11 +156,6 @@ namespace Function.Domain.Helpers
         }
 
 
-        private async Task GetSynapseSparkNotebookSource(string synapseWorksaceName, string sparkNotebookName)
-        {
-            
-        }
-      
         private InputOutput GetInputOutputs(IInputsOutputs inOut)
         {
             var id = _qnParser!.GetIdentifiers(inOut.NameSpace,inOut.Name);

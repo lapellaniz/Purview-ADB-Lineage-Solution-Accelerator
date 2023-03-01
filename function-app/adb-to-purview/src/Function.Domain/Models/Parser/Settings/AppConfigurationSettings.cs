@@ -27,9 +27,9 @@ namespace Function.Domain.Models.Settings
         public bool useResourceSet { get; set; } = true;
         public string AuthEndPoint { get; set; } = "https://login.microsoftonline.com/";
 
-        public string OpenAIEndpoint {get;set;}
-        public string OpenAIKey {get;set;}
-        public string OpenAIDeploymentName {get;set;}
+        public string? OpenAIEndpoint {get;set;}
+        public string? OpenAIKey {get;set;}
+        public string? OpenAIDeploymentName {get;set;}
 
         public int OpenAIMaxTokens {get;set;}
 

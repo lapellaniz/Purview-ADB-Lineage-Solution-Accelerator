@@ -261,9 +261,15 @@ namespace Function.Domain.Providers
                 //var requestBodyContent = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
                 
                 var tokenResponse = await _client.SendAsync(request);
-                tokenResponse?.EnsureSuccessStatusCode();
-                var resultFromOpenAI = JsonConvert.DeserializeObject<OpenAICompletionResponse>(tokenResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult());
-                return resultFromOpenAI?.Choices[0]?.Text;
+                tokenResponse.EnsureSuccessStatusCode();
+                OpenAICompletionResponse? resultFromOpenAI = JsonConvert.DeserializeObject<OpenAICompletionResponse>(tokenResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                if(resultFromOpenAI != null && resultFromOpenAI.Choices != null)
+                {
+                    string? result = resultFromOpenAI.Choices[0].Text; 
+                    return result ?? "Could not get source code explaination.";
+                }
+                else 
+                    return "Could not get source code explaination.";
                
             }
             catch (Exception ex)
