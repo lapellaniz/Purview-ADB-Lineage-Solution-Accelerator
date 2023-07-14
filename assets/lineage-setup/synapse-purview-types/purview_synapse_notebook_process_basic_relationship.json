@@ -22,8 +22,8 @@
             "isLegacyAttribute": false
         },
         "endDef2": {
-            "type": "Process",
-            "name": "notebook",
+            "type": "azure_synapse_process",
+            "name": "synapse_notebook",
             "isContainer": false,
             "cardinality": "SINGLE",
             "isLegacyAttribute": false
