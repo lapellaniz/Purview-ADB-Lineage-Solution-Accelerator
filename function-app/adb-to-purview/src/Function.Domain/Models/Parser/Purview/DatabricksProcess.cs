@@ -18,7 +18,7 @@ namespace Function.Domain.Models.Purview
       public class SynapseProcess
     {
         [JsonProperty("typeName")]
-        public string TypeName = "Process";
+        public string TypeName = "azure_synapse_process";
         [JsonProperty("attributes")]
         public SynapseProcessAttributes Attributes = new SynapseProcessAttributes();
         [JsonProperty("relationshipAttributes")]
