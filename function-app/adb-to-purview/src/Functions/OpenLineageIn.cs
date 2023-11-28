@@ -10,6 +10,7 @@ using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
 using Function.Domain.Helpers;
 using Function.Domain.Services;
+using Function.Domain.Providers;
 
 
 namespace AdbToPurview.Function
@@ -24,38 +25,46 @@ namespace AdbToPurview.Function
 
         // The Event Hubs client types are safe to cache and use as a singleton for the lifetime
         // of the application, which is best practice when events are being published or read regularly.
-        private EventHubProducerClient _producerClient;  
+        private EventHubProducerClient _producerClient;
         private IConfiguration _configuration;
         private IOlFilter _olFilter;
+
+        private readonly IOlMessageProvider _olMessageStore;
 
         public OpenLineageIn(
                 ILogger<OpenLineageIn> logger,
                 IHttpHelper httpHelper,
                 IConfiguration configuration,
-                IOlFilter olFilter){
+                IOlFilter olFilter,
+                IOlMessageProvider olMessageStore)
+        {
             _logger = logger;
             _httpHelper = httpHelper;
-            _configuration = configuration;            
+            _configuration = configuration;
             _producerClient = new EventHubProducerClient(_configuration[EH_CONNECTION_STRING], _configuration[EVENT_HUB_NAME]);
             _olFilter = olFilter;
+            _olMessageStore = olMessageStore;
         }
 
         [Function("OpenLineageIn")]
         public async Task<HttpResponseData> Run(
             [HttpTrigger(
-                AuthorizationLevel.Function, 
-                "get", 
-                "post", 
+                AuthorizationLevel.Function,
+                "get",
+                "post",
                 Route = "v1/lineage"
             )] HttpRequestData req)
         {
-            try {
+            try
+            {
                 // send event data to EventHub
                 var events = new List<EventData>();
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 var strRequest = requestBody.ToString();
+                _logger.LogInformation($"OpenLineageIn: Processing request...");
                 if (_olFilter.FilterOlMessage(strRequest))
                 {
+                    _logger.LogInformation($"OpenLineageIn: Request passed validation.");
                     var sendEvent = new EventData(strRequest);
                     var sendEventOptions = new SendEventOptions();
                     // uses the OL Job Namespace as the EventHub partition key
@@ -66,20 +75,32 @@ namespace AdbToPurview.Function
                     }
                     else
                     {
+                        // log OpenLineage incoming data
+                        _logger.LogInformation($"OpenLineageIn: <<{strRequest}>>");
+
+                        // Send to event hub
                         sendEventOptions.PartitionKey = jobNamespace;
                         events.Add(sendEvent);
                         await _producerClient.SendAsync(events, sendEventOptions);
-                        // log OpenLineage incoming data
-                        _logger.LogInformation($"OpenLineageIn:{strRequest}");
+
+                        if (_olMessageStore.IsEnabled)
+                        {
+                            // Save to blob storage
+                            await _olMessageStore.SaveAsync(strRequest);
+                        }
                     }
+                }
+                else
+                {
+                    _logger.LogInformation($"OpenLineageIn: Request will be skipped.");
                 }
                 // Send appropriate success response
                 string responseString = "{\"message\":\"Successfully ingested OpenLineage event\"}";
-                var response = await _httpHelper.CreateSuccessfulHttpResponse(req, responseString);
-                return response;
+                return await _httpHelper.CreateSuccessfulHttpResponse(req, responseString);
             }
-            catch(Exception ex){
-                _logger.LogError(ex, $"Error in OpenLineageIn function: {ex.Message}");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in OpenLineageIn function: {errorMessage}", ex.Message);
                 return _httpHelper.CreateServerErrorHttpResponse(req);
             }
         }

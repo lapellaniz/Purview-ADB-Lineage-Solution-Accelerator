@@ -4,6 +4,8 @@ using Function.Domain.Helpers;
 using Function.Domain.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Function.Domain.Middleware;
+using Function.Domain.Providers;
+using Microsoft.Extensions.Configuration;
 
 namespace TestFunc
 {
@@ -21,13 +23,15 @@ namespace TestFunc
                     {
                         workerApplication.UseMiddleware<ScopedLoggingMiddleware>();
                     })
-                .ConfigureServices(s =>                
-                    {                        
-                    s.AddScoped<IHttpHelper, HttpHelper>();
-                    s.AddScoped<IOlToPurviewParsingService, OlToPurviewParsingService>(); 
-                    s.AddScoped<IPurviewIngestion, PurviewIngestion>();
-                    s.AddScoped<IOlFilter, OlFilter>();
-                    s.AddScoped<IOlConsolodateEnrich, OlConsolodateEnrich>();            
+                .ConfigureServices((hostContext, s) =>
+                    {
+                        s.AddScoped<IHttpHelper, HttpHelper>();
+                        s.AddScoped<IOlToPurviewParsingService, OlToPurviewParsingService>();
+                        s.AddScoped<IPurviewIngestion, PurviewIngestion>();
+                        s.AddScoped<IOlFilter, OlFilter>();
+                        s.AddScoped<IOlConsolodateEnrich, OlConsolodateEnrich>();
+                        s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
+                        s.AddTransient<IOlMessageProvider, OlMessageProvider>();
                     })
                 .Build();
             host.Run();
