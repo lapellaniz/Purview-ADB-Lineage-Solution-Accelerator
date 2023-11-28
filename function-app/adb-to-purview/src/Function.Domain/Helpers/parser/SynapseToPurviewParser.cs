@@ -81,9 +81,10 @@ namespace Function.Domain.Helpers
         /// <returns>A Databricks workspace object</returns>
         public SynapseWorkspace GetSynapseWorkspace()
         {
-            SynapseWorkspace synapseWorkspace = new SynapseWorkspace();
-            synapseWorkspace.Attributes.Name = $"{_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0]}";            
-            synapseWorkspace.Attributes.QualifiedName = $"https://{_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0]}.azuresynapse.net";
+            SynapseWorkspace synapseWorkspace = new();
+            string workspaceName = _eEvent!.OlEvent!.Job.Namespace!.Split(",")[0];
+            synapseWorkspace.Attributes.Name = $"{workspaceName}";            
+            synapseWorkspace.Attributes.QualifiedName = $"https://{workspaceName}.azuresynapse.net";
             return synapseWorkspace;
         }
 
