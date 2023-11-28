@@ -82,8 +82,8 @@ namespace Function.Domain.Helpers
         public SynapseWorkspace GetSynapseWorkspace()
         {
             SynapseWorkspace synapseWorkspace = new SynapseWorkspace();
-            synapseWorkspace.Attributes.Name = $"{_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0]}";
-            synapseWorkspace.Attributes.QualifiedName = $"synapse://{_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0]}.dev.azuresynapse.net";
+            synapseWorkspace.Attributes.Name = $"{_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0]}";            
+            synapseWorkspace.Attributes.QualifiedName = $"https://{_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0]}.azuresynapse.net";
             return synapseWorkspace;
         }
 
