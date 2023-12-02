@@ -36,13 +36,18 @@ namespace Function.Domain.Helpers.Parser
         /// </summary>
         /// <param name="olEvent">OpenLineage Event message</param>
         /// <returns>true if input is valid, false if not</returns>
-        public bool Validate(Event olEvent){
+        public bool Validate(Event olEvent)
+        {
+            if (olEvent.Job.Namespace.Contains("azuresynapsespark"))
+            {
+                return ValidateSynapseOlEvent(olEvent);
+            }
             if (olEvent.Inputs.Count > 0 && olEvent.Outputs.Count > 0)
             {
                 // Need to rework for multiple inputs and outputs in one packet - possibly combine and then hash
                 if (InOutEqual(olEvent))
-                { 
-                    return false; 
+                {
+                    return false;
                 }
                 if (olEvent.EventType == "START")
                 {
@@ -62,6 +67,27 @@ namespace Function.Domain.Helpers.Parser
                 }
             }
             return false;
+        }
+
+        private bool ValidateSynapseOlEvent(Event olEvent)
+        {
+            // So far, we have only seen START and COMPLETE events where we either have inputs or outputs. The ones that have both show the same datasource.
+            // If we implement consolidation, we can then allow for outputs only events.
+            // Currently the assumption is that the first input is the sink and the rest of the inputs are the source.
+            if (olEvent.Inputs.Count == 0)
+            {
+                return false;
+            }
+            if (olEvent.EventType != "COMPLETE")// && olEvent.EventType != "START")
+            {
+                return false;
+            }
+            if (InOutEqual(olEvent))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private bool InOutEqual(Event ev)

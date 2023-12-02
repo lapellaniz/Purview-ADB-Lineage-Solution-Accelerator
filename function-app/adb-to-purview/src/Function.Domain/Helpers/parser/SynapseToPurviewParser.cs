@@ -20,7 +20,7 @@ namespace Function.Domain.Helpers
     /// <summary>
     /// Creates Purview Databricks objects from OpenLineage and ADB data from the jobs API
     /// </summary>
-    public class SynapseToPurviewParser: ISynapseToPurviewParser
+    public class SynapseToPurviewParser : ISynapseToPurviewParser
     {
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
@@ -29,11 +29,11 @@ namespace Function.Domain.Helpers
         private readonly IColParser? _colParser;
         private readonly EnrichedSynapseEvent? _eEvent;
         private readonly string? _synapseWorkspaceUrl;
-        
+
         private readonly ISynapseClientProvider _synapseClientProvider;
         const string SETTINGS = "OlToPurviewMappings";
 
-        
+
 
         /// <summary>
         /// Constructor for DatabricksToPurviewParser
@@ -47,25 +47,28 @@ namespace Function.Domain.Helpers
             _loggerFactory = loggerFactory;
             _synapseClientProvider = new SynapseClientProvider(loggerFactory, configuration);
 
-            try{
-            var map = configuration[SETTINGS];
-            _parserConfig = JsonConvert.DeserializeObject<ParserSettings>(map) ?? throw new MissingCriticalDataException("critical config not found");
-            } 
-            catch (Exception ex) {
-                _logger.LogError(ex,"SynapseToPurviewParser: Error retrieving ParserSettings.  Please make sure these are configured on your function.");
+            try
+            {
+                var map = configuration[SETTINGS];
+                _parserConfig = JsonConvert.DeserializeObject<ParserSettings>(map) ?? throw new MissingCriticalDataException("critical config not found");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SynapseToPurviewParser: Error retrieving ParserSettings.  Please make sure these are configured on your function.");
                 throw;
             }
-           
-           if(eEvent.OlEvent != null){
+
+            if (eEvent.OlEvent != null)
+            {
                 _eEvent = eEvent;
-                _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.dev.azuresynapse.net";;
+                _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.azuresynapse.net"; ;
                 _parserConfig.AdbWorkspaceUrl = this.GetSynapseWorkspace().Attributes.Name;
                 _qnParser = new QnParser(_parserConfig, _loggerFactory, null);
 
                 _colParser = new ColParser(_parserConfig, _loggerFactory,
                                         _eEvent.OlEvent,
-                                        _qnParser);            
-           }
+                                        _qnParser);
+            }
 
         }
 
@@ -73,7 +76,7 @@ namespace Function.Domain.Helpers
         /// Gets the job type from the supported ADB job types.  Currently all are supported except Spark Submit jobs.
         /// </summary>
         /// <returns></returns>
-        
+
 
         /// <summary>
         /// Creates a Purview Databricks workspace object for an enriched event
@@ -83,7 +86,7 @@ namespace Function.Domain.Helpers
         {
             SynapseWorkspace synapseWorkspace = new();
             string workspaceName = _eEvent!.OlEvent!.Job.Namespace!.Split(",")[0];
-            synapseWorkspace.Attributes.Name = $"{workspaceName}";            
+            synapseWorkspace.Attributes.Name = $"{workspaceName}";
             synapseWorkspace.Attributes.QualifiedName = $"https://{workspaceName}.azuresynapse.net";
             return synapseWorkspace;
         }
@@ -91,13 +94,13 @@ namespace Function.Domain.Helpers
         public SynapseNotebook GetSynapseNotebook(string workspaceQn)
         {
             var synapseNotebook = new SynapseNotebook();
-            string sparkjobname = _eEvent!.OlEvent!.Job.Name.Split(".")[0].Split("_")[_eEvent!.OlEvent!.Job.Name.Split(".")[0].Split("_").Length-1];
-            string sparkNoteBookName = _eEvent!.OlEvent!.Job.Name.Substring(0,_eEvent!.OlEvent!.Job.Name.IndexOf(sparkjobname) - 1);
+            string sparkjobname = _eEvent!.OlEvent!.Job.Name.Split(".")[0].Split("_")[_eEvent!.OlEvent!.Job.Name.Split(".")[0].Split("_").Length - 1];
+            string sparkNoteBookName = _eEvent!.OlEvent!.Job.Name.Substring(0, _eEvent!.OlEvent!.Job.Name.IndexOf(sparkjobname) - 1);
             string sparkClusterName = sparkNoteBookName.Split("_").Last();
             sparkNoteBookName = String.Join("_", sparkNoteBookName.Split("_").Take(sparkNoteBookName.Split("_").Length - 1));
-            
-            string notebookPath = $"authoring/analyze/notebooks/{sparkNoteBookName}";
-                       
+
+            string notebookPath = $"/notebooks/{sparkNoteBookName}";
+
             var result = _synapseClientProvider.GetSparkNotebookSource(_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0], sparkNoteBookName).GetAwaiter().GetResult();
 
             synapseNotebook.Attributes.Name = sparkNoteBookName;
@@ -117,36 +120,49 @@ namespace Function.Domain.Helpers
             var synapseProcess = new SynapseProcess();
             //var ColumnAttributes = new ColumnLevelAttributes();
 
+            List<Inputs> eventInputs;
+            var eventOutputs = _eEvent!.OlEvent!.Outputs.ToList();
+            // Assumes that when outputs are empty and we have multiple inputs, the first input is the sink and the rest are the source
+            if (eventOutputs.Count == 0 && _eEvent!.OlEvent!.Inputs.Count > 1)
+            {
+                eventInputs = _eEvent!.OlEvent!.Inputs.Skip(1).DistinctBy(i => i.Name).ToList();
+                eventOutputs = _eEvent!.OlEvent!.Inputs.Take(1).Select(i => new Outputs { Name = i.Name, NameSpace = i.NameSpace }).ToList();
+            }
+            else
+            {
+                eventInputs = _eEvent!.OlEvent!.Inputs.ToList();
+            }
+
             var inputs = new List<InputOutput>();
-            foreach (IInputsOutputs input in _eEvent!.OlEvent!.Inputs)
+            foreach (IInputsOutputs input in eventInputs)
             {
                 inputs.Add(GetInputOutputs(input));
             }
 
             var outputs = new List<InputOutput>();
-            foreach (IInputsOutputs output in _eEvent.OlEvent!.Outputs)
+            foreach (IInputsOutputs output in eventOutputs)
             {
                 outputs.Add(GetInputOutputs(output));
             }
 
-            synapseProcess.Attributes = GetProcAttributes(sparkNotebookQn, inputs,outputs,_eEvent.OlEvent);
+            synapseProcess.Attributes = GetProcAttributes(sparkNotebookQn, inputs, outputs, _eEvent.OlEvent);
             synapseProcess.Attributes.SparkPoolName = synapseNotebook.Attributes.SparkPoolName;
             synapseProcess.Attributes.User = synapseNotebook.Attributes.User;
             synapseProcess.Attributes.SparkVersion = synapseNotebook.Attributes.SparkVersion;
             synapseProcess.Attributes.Inputs = inputs;
             synapseProcess.Attributes.Outputs = outputs;
             synapseProcess.Attributes.ColumnMapping = JsonConvert.SerializeObject(_colParser!.GetColIdentifiers());
-            synapseProcess.RelationshipAttributes.Notebook.QualifiedName = sparkNotebookQn; 
+            synapseProcess.RelationshipAttributes.Notebook.QualifiedName = sparkNotebookQn;
             return synapseProcess;
         }
 
-    
+
 
         private SynapseProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent)
         {
             var pa = new SynapseProcessAttributes();
-            string sparkjobname = sparkEvent.Job.Name.Split(".")[0].Split("_")[sparkEvent.Job.Name.Split(".")[0].Split("_").Length-1];
-            string sparkNoteBookName = sparkEvent.Job.Name.Substring(0,sparkEvent.Job.Name.IndexOf(sparkjobname) - 1);
+            string sparkjobname = sparkEvent.Job.Name.Split(".")[0].Split("_")[sparkEvent.Job.Name.Split(".")[0].Split("_").Length - 1];
+            string sparkNoteBookName = sparkEvent.Job.Name.Substring(0, sparkEvent.Job.Name.IndexOf(sparkjobname) - 1);
             pa.Name = sparkNoteBookName + "-lineage";
             pa.QualifiedName = taskQn + "-lineage"; //+ sparkEvent.Outputs[0].Name;
             pa.ColumnMapping = JsonConvert.SerializeObject(_colParser!.GetColIdentifiers());
@@ -159,7 +175,7 @@ namespace Function.Domain.Helpers
 
         private InputOutput GetInputOutputs(IInputsOutputs inOut)
         {
-            var id = _qnParser!.GetIdentifiers(inOut.NameSpace,inOut.Name);
+            var id = _qnParser!.GetIdentifiers(inOut.NameSpace, inOut.Name);
             var inputOutputId = new InputOutput();
             inputOutputId.TypeName = id.PurviewType;
             inputOutputId.UniqueAttributes.QualifiedName = id.QualifiedName;
@@ -169,7 +185,7 @@ namespace Function.Domain.Helpers
 
         private string GetInputsOutputsHash(List<InputOutput> inputs, List<InputOutput> outputs)
         {
-            inputs.Sort((x, y) => x.UniqueAttributes.QualifiedName.CompareTo(y.UniqueAttributes.QualifiedName));;
+            inputs.Sort((x, y) => x.UniqueAttributes.QualifiedName.CompareTo(y.UniqueAttributes.QualifiedName)); ;
             StringBuilder sInputs = new StringBuilder(inputs.Count);
             foreach (var input in inputs)
             {
@@ -198,12 +214,12 @@ namespace Function.Domain.Helpers
             tmpHash = MD5.Create().ComputeHash(tmpSource);
 
             StringBuilder sOutput = new StringBuilder(tmpHash.Length);
-            for (int i=0;i < tmpHash.Length; i++)
+            for (int i = 0; i < tmpHash.Length; i++)
             {
                 sOutput.Append(tmpHash[i].ToString("X2"));
             }
             return sOutput.ToString();
         }
-        
+
     }
 }

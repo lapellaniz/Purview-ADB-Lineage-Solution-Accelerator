@@ -156,7 +156,7 @@
                     "op2": "abfss"
                 }
             ],
-            "qualifiedName": "mssql://synw-udf-dlz-dv-eu2-01-ondemand.sql.azuresynapse.net/{nameGroups[0].parts[0]}/dbo/{nameGroups[0].parts[1]}",
+            "qualifiedName": "mssql://synw-udf-dlz-dv-eu2-01-ondemand.sql.azuresynapse.net/{nameGroups[0].parts[0]}/dbo/{nameGroups[0].parts[^1]}",
             "purviewDataType": "azure_synapse_serverless_sql_table",
             "purviewPrefix": "mssql"
         },

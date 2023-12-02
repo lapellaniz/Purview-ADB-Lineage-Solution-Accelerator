@@ -39,7 +39,7 @@ namespace AdbToPurview.Function
                 _event = JsonConvert.DeserializeObject<Event>(trimString) ?? new Event();
 
                 //Check if event is from Azure Synapse Spark Pools
-                if(_event.Job.Namespace.Contains("azuresynapsespark") && _event.EventType == "COMPLETE")
+                if(_event.Job.Namespace.Contains("azuresynapsespark") ) //&& _event.EventType == "COMPLETE")
                 {
                     _logger.LogInformation($"PurviewOut-ParserService:Processing lineage for Synapse Workspace {_event.Job.Namespace.Split(",")[0]}");
                     var purviewSynapseEvent1 = _olToPurviewParsingService.GetParentEntity(_event);

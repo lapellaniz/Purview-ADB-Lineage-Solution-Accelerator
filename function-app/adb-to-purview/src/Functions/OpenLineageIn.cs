@@ -85,6 +85,7 @@ namespace AdbToPurview.Function
 
                         if (_olMessageStore.IsEnabled)
                         {
+                            _logger.LogInformation($"OpenLineageIn: Storing incoming file.");
                             // Save to blob storage
                             await _olMessageStore.SaveAsync(strRequest);
                         }
@@ -92,6 +93,14 @@ namespace AdbToPurview.Function
                 }
                 else
                 {
+                    // TODO : Remove this after testing or use a different feature flag. We prob don't want to capture these all the time.
+                    if (_olMessageStore.IsEnabled)
+                    {
+                        _logger.LogInformation($"OpenLineageIn: Storing skipped file.");
+                        // Save to blob storage
+                        await _olMessageStore.SaveAsync(strRequest);
+                    }
+
                     _logger.LogInformation($"OpenLineageIn: Request will be skipped.");
                 }
                 // Send appropriate success response
