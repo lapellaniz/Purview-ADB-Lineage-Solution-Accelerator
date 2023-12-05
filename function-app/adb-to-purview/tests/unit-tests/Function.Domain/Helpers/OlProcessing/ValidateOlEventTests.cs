@@ -33,5 +33,20 @@ namespace UnitTests.Function.Domain.Helpers.OlProcessing
             // Assert
             Xunit.Assert.True(actual);
         }
+
+        [Fact]
+        public async Task Validate_SynapseOlMessageWithNoIO_ReturnsFalse()
+        {
+            // Arrange
+            var olPayload = "{\"eventTime\":\"2023-11-30T22:43:26.834Z\",\"producer\":\"https://github.com/OpenLineage/OpenLineage/tree/1.4.1/integration/spark\",\"schemaURL\":\"https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent\",\"eventType\":\"COMPLETE\",\"run\":{\"runId\":\"f1e77e15-4fa3-4523-8f70-9f8ad07aa53e\"},\"job\":{\"namespace\":\"synw-udf-dlz-dv-eu2-01,azuresynapsespark\",\"name\":\"n_b_ccw_ref_condition_raw_to_conformed_lratest_1701383875.adaptive_spark_plan\",\"facets\":{}},\"inputs\":[],\"outputs\":[]}";
+            var olEvent = JsonConvert.DeserializeObject<Event>(olPayload);
+
+            // Act
+            Xunit.Assert.NotNull(olEvent);
+            var actual = _validator.Validate(olEvent);
+
+            // Assert
+            Xunit.Assert.False(actual);
+        }
     }
 }
