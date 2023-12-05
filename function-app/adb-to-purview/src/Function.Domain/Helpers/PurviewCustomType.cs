@@ -705,7 +705,11 @@ namespace Function.Domain.Helpers
 
             if (_cache.Contains("token"))
             {
-                return ((AuthenticationResult)_cache.Get("token")).AccessToken;
+                var token = ((AuthenticationResult)_cache.Get("token"));
+                if(token.ExpiresOn > DateTime.UtcNow)
+                {
+                    return token.AccessToken;
+                }                
             }
 
             // Even if this is a console application here, a daemon application is a confidential client application
