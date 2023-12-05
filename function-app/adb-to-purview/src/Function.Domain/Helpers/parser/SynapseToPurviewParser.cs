@@ -61,7 +61,7 @@ namespace Function.Domain.Helpers
             if (eEvent.OlEvent != null)
             {
                 _eEvent = eEvent;
-                _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.azuresynapse.net"; ;
+                _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.dev.azuresynapse.net"; ;
                 _parserConfig.AdbWorkspaceUrl = this.GetSynapseWorkspace().Attributes.Name;
                 _qnParser = new QnParser(_parserConfig, _loggerFactory, null);
 
