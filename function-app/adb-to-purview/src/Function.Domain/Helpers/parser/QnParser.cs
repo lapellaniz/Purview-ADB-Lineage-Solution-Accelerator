@@ -214,7 +214,28 @@ namespace Function.Domain.Helpers
                     }
                     if (configValue.IndexVals.Count() > 1)
                     {
-                        rtrn = typedOp1[configValue.IndexVals[0].Index].NameParts[configValue.IndexVals[1].Index];
+                        if(configValue.IndexVals[1].Value.StartsWith('^'))
+                        {
+                            var indexValue = configValue.IndexVals[1].Value;
+                            var match = Regex.Match(indexValue, @"[^\^]*$");
+                            if (!match.Success)
+                            {
+                                var ex = new MissingCriticalDataException("Error getting dynamic value");
+                                _logger.LogError(ex, "Error getting dynamic value. Index value '{indexValue}' is not in the correct format.", indexValue);
+                                throw ex;
+                            }
+                            if(!int.TryParse(match.Value, out int namePartsIndex))
+                            {
+                                var ex = new MissingCriticalDataException("Error getting dynamic value");
+                                _logger.LogError(ex, "Error parsing index value '{indexValue}'. Matched value '{matchValue}' is not in the correct format.", indexValue, match.Value);
+                                throw ex;
+                            }
+                            rtrn = typedOp1[configValue.IndexVals[0].Index].NameParts[^namePartsIndex];
+                        }
+                        else
+                        {
+                            rtrn = typedOp1[configValue.IndexVals[0].Index].NameParts[configValue.IndexVals[1].Index];
+                        }                        
                     }
                     else
                     {
