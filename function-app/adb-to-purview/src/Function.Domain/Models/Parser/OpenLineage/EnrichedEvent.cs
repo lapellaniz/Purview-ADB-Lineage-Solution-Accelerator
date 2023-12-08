@@ -5,9 +5,12 @@ using Function.Domain.Models.SynapseSpark;
 
 namespace Function.Domain.Models.OL
 {
-    public class EnrichedEvent
+    public interface IEnrichedEvent
     {
-        public Event? OlEvent = null;
+        public Event? OlEvent { get; }
+    }
+    public class EnrichedEvent : IEnrichedEvent
+    {
         public AdbRoot? AdbRoot = null;
         public AdbRoot? AdbParentRoot = null;
         public bool IsInteractiveNotebook = false;
@@ -17,13 +20,15 @@ namespace Function.Domain.Models.OL
             AdbRoot = adbRoot;
             AdbParentRoot = adbParentRoot;
         }
+
+        public Event? OlEvent {get; private set;}
     }
 
 
 
-    public class EnrichedSynapseEvent
+    public class EnrichedSynapseEvent : IEnrichedEvent
     {
-        public Event? OlEvent = null;
+        public Event? OlEvent {get; private set;}
         public SynapseRoot? SynapseRoot = null;
 
         public SynapseSparkPool? SynapseSparkPool = null;

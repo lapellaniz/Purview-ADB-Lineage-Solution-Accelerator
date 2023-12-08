@@ -68,76 +68,39 @@ namespace Function.Domain.Services
             }
         }
 
-        public string? GetParentEntity(Event eventData)
+        public string? GetParentEntity(EnrichedSynapseEvent eventData)
         {
-             if (eventData == null)
+            if (eventData == null)
             {
                 return null;
             }
-
-            SynapseRoot? synapseRoot = GetSynapseJob(eventData);
-            SynapseSparkPool? synapseSparkPool = GetSynapseSparkPool(eventData);
-            EnrichedSynapseEvent enrichedEventData = new EnrichedSynapseEvent(eventData, synapseRoot, synapseSparkPool);
            
-            ISynapseToPurviewParser parser = new SynapseToPurviewParser(_loggerFactory, _config, enrichedEventData);
+            var parser = new SynapseToPurviewParser(_loggerFactory, _config, eventData);
             SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
-            SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);            
-            //SynapseProcess synapseProcess = parser.GetSynapseProcess(synapseNotebook.Attributes.QualifiedName, synapseNotebook);
+            SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);
 
             var synapseWorkspaceStr = JsonConvert.SerializeObject(synapseWorkspace);
             var synapseNotebookStr = JsonConvert.SerializeObject(synapseNotebook);
-            //var synapseProcessStr = JsonConvert.SerializeObject(synapseProcess);
 
-            //return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr},{synapseProcessStr}{SUFFIX}";
-            //return $"{PREFIX}{synapseWorkspaceStr},{synapseProcessStr}{SUFFIX}";
             return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr}{SUFFIX}";
         }
 
-        public string? GetChildEntity(Event eventData)
+        public string? GetChildEntity(EnrichedSynapseEvent eventData)
         {
-             if (eventData == null)
+            if (eventData == null)
             {
                 return null;
             }
 
-            SynapseRoot? synapseRoot = GetSynapseJob(eventData);
-            SynapseSparkPool? synapseSparkPool = GetSynapseSparkPool(eventData);
-            EnrichedSynapseEvent enrichedEventData = new EnrichedSynapseEvent(eventData, synapseRoot, synapseSparkPool);
-           
-            ISynapseToPurviewParser parser = new SynapseToPurviewParser(_loggerFactory, _config, enrichedEventData);
+            var parser = new SynapseToPurviewParser(_loggerFactory, _config, eventData);
             SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
             SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);            
             SynapseProcess synapseProcess = parser.GetSynapseProcess(synapseNotebook.Attributes.QualifiedName, synapseNotebook);
 
-            //var synapseWorkspaceStr = JsonConvert.SerializeObject(synapseWorkspace);
-            //var synapseNotebookStr = JsonConvert.SerializeObject(synapseNotebook);
             var synapseProcessStr = JsonConvert.SerializeObject(synapseProcess);
-
-            //return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr},{synapseProcessStr}{SUFFIX}";
-            //return $"{PREFIX}{synapseWorkspaceStr},{synapseProcessStr}{SUFFIX}";
-            //return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr}{SUFFIX}";
             return $"{PREFIX}{synapseProcessStr}{SUFFIX}";
         }
         
-        private SynapseRoot? GetSynapseJob(Event eEvent)
-        {
-            string runId = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length-1];
-            SynapseRoot? synapseRootResult = null;
-            synapseRootResult = _synapseClientProvider.GetSynapseJobAsync(long.Parse(runId), eEvent.Job.Namespace.Split(",")[0]).GetAwaiter().GetResult();
-            return synapseRootResult;
-        }
-
-        private SynapseSparkPool? GetSynapseSparkPool(Event eEvent)
-        {
-            string runId = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length-1];
-            string sparkjobname = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length-1];
-            string sparkNoteBookName = eEvent.Job.Name.Substring(0,eEvent.Job.Name.IndexOf(sparkjobname) - 1);
-            string sparkClusterName = sparkNoteBookName.Split("_").Last();
-            SynapseSparkPool? synapseSparkPoolResult = null;
-            synapseSparkPoolResult = _synapseClientProvider.GetSynapseSparkPoolsAsync(eEvent.Job.Namespace.Split(",")[0], sparkClusterName).GetAwaiter().GetResult();
-            return synapseSparkPoolResult;
-        }
-
         private string ParseInteractiveNotebook(IDatabricksToPurviewParser parser)
         {
             var databricksWorkspace = parser.GetDatabricksWorkspace();

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Function.Domain.Middleware;
 using Function.Domain.Providers;
 using Microsoft.Extensions.Configuration;
+using Function.Domain.Models.OL;
 
 namespace TestFunc
 {
@@ -28,7 +29,9 @@ namespace TestFunc
                         s.AddScoped<IOlToPurviewParsingService, OlToPurviewParsingService>();
                         s.AddScoped<IPurviewIngestion, PurviewIngestion>();
                         s.AddScoped<IOlFilter, OlFilter>();
-                        s.AddScoped<IOlConsolodateEnrich, OlConsolodateEnrich>();
+                        s.AddScoped<IOlConsolodateEnrich<EnrichedEvent>, OlConsolodateEnrich>();
+                        s.AddScoped<IOlConsolodateEnrich<EnrichedSynapseEvent>, OlConsolidateEnrichSynapse>();
+                        s.AddScoped<IOlConsolidateEnrichFactory, OlConsolidateEnrichFactory>();
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
                         s.AddTransient<IOlMessageProvider, OlMessageProvider>();
                     })

@@ -14,7 +14,7 @@ namespace Function.Domain.Services
     /// Service that consolidates OpenLineage Start messages, containing environment data, with Complete messages.  
     /// Further, this service enriches OpenLineage messages with data from the ADB Jobs API
     /// </summary>
-    public class OlConsolodateEnrich : IOlConsolodateEnrich
+    public class OlConsolodateEnrich : IOlConsolodateEnrich<EnrichedEvent>
     {
         private const string START_EVENT_TYPE = "START";
         private const string COMPLETE_EVENT_TYPE = "COMPLETE";
@@ -63,7 +63,7 @@ namespace Function.Domain.Services
             // Validate the event
             if (!validateOlEvent.Validate(_event))
             {
-                return null;
+                return default(EnrichedEvent);
             }
 
             try{
@@ -139,5 +139,6 @@ namespace Function.Domain.Services
         {
             return strEvent.Substring(strEvent.IndexOf('{')).Trim();
         }
+
     }
 }
