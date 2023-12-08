@@ -14,14 +14,13 @@ namespace TestFunc
         public static void Main()
         {
             var host = new HostBuilder()
+                .ConfigureFunctionsWebApplication(workerApplication => {
+                    workerApplication.UseMiddleware<ScopedLoggingMiddleware>();
+                })
                 .ConfigureLogging((context, builder) =>
                     {
                         var key = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                         builder.AddApplicationInsights(key);
-                    })
-                .ConfigureFunctionsWorkerDefaults(workerApplication =>
-                    {
-                        workerApplication.UseMiddleware<ScopedLoggingMiddleware>();
                     })
                 .ConfigureServices((hostContext, s) =>
                     {

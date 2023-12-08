@@ -81,9 +81,8 @@ namespace AdbToPurview.Function
                 return $"Output message created at {DateTime.Now}";
             }
             catch(Exception e){
-                var message = $"Error in PurviewOut function: {e.Message}";
-                _logger.LogError(message);
-                return message;
+                _logger.LogError(e, "Error in PurviewOut function: {errorMessage}", e.Message);
+                return $"Error in PurviewOut function: {e.Message}";
             }
         }
     }
