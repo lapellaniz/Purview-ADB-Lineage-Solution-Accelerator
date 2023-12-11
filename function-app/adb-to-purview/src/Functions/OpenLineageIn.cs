@@ -57,11 +57,16 @@ namespace AdbToPurview.Function
         {
             try
             {
+                _logger.LogInformation($"OpenLineageIn: Processing request...");
                 // send event data to EventHub
                 var events = new List<EventData>();
-                string requestBody = new StreamReader(req.Body).ReadToEnd();
-                var strRequest = requestBody.ToString();
-                _logger.LogInformation($"OpenLineageIn: Processing request...");
+                
+                var strRequest = await req.ReadAsStringAsync();
+                if(string.IsNullOrEmpty(strRequest))
+                {
+                    throw new Exception("OpenLineageIn: Request is null or empty.");
+                }
+
                 if (_olFilter.FilterOlMessage(strRequest))
                 {
                     _logger.LogInformation($"OpenLineageIn: Request passed validation.");

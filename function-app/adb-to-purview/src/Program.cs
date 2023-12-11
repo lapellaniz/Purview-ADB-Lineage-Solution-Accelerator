@@ -38,8 +38,8 @@ namespace TestFunc
                         s.AddScoped<IOlToPurviewParsingService, OlToPurviewParsingService>();
                         s.AddScoped<IPurviewIngestion, PurviewIngestion>();
                         s.AddScoped<IOlFilter, OlFilter>();
-                        s.AddScoped<IOlConsolodateEnrich<EnrichedEvent>, OlConsolodateEnrich>();
-                        s.AddScoped<IOlConsolodateEnrich<EnrichedSynapseEvent>, OlConsolidateEnrichSynapse>();
+                        s.AddScoped<OlConsolodateEnrich>();
+                        s.AddScoped<OlConsolidateEnrichSynapse>();
                         s.AddScoped<IOlConsolidateEnrichFactory, OlConsolidateEnrichFactory>();
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
                         s.AddTransient<IOlMessageProvider, OlMessageProvider>();
