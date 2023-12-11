@@ -7,7 +7,7 @@ namespace Function.Domain.Services
     {
         public string? GetPurviewFromOlEvent(EnrichedEvent eventData);
 
-        public string? GetParentEntity(EnrichedSynapseEvent eventData);
+        public Task<string?> GetParentEntityAsync(EnrichedSynapseEvent eventData);
         public string? GetChildEntity(EnrichedSynapseEvent eventData);
     }
 }

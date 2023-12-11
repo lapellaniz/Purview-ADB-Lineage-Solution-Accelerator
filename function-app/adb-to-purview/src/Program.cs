@@ -14,6 +14,7 @@ using System.Net.Http;
 using Polly.Contrib.WaitAndRetry;
 using System.Threading.Tasks;
 using Polly.Retry;
+using Microsoft.FeatureManagement;
 
 namespace TestFunc
 {
@@ -33,7 +34,7 @@ namespace TestFunc
                     })
                 .ConfigureServices((hostContext, s) =>
                     {
-                        s.AddMemoryCache();
+                        s.AddMemoryCache().AddFeatureManagement();
                         s.AddScoped<IHttpHelper, HttpHelper>();
                         s.AddScoped<IOlToPurviewParsingService, OlToPurviewParsingService>();
                         s.AddScoped<IPurviewIngestion, PurviewIngestion>();
@@ -44,13 +45,13 @@ namespace TestFunc
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
                         s.AddTransient<IOlMessageProvider, OlMessageProvider>();
                         s.AddHttpClient<ISynapseClientProvider, SynapseClientProvider>()
-                        .AddPolicyHandler(GetRetryPolicy());
+                        .AddPolicyHandler((provider, _) => GetRetryPolicy(provider.GetRequiredService<ILogger<Program>>()));
                     })
                 .Build();
             host.Run();
         }
 
-        private static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy()
+        private static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger<Program> logger)
         {
             //var delay = Backoff.DecorrelatedJitterBackoffV2(medianFirstRetryDelay: TimeSpan.FromSeconds(1), retryCount: 5);
 
@@ -60,12 +61,16 @@ namespace TestFunc
                 .WaitAndRetryAsync(
                     5,
                     sleepDurationProvider: (retryAttempt, response, context) =>
-                    {
+                    {                        
                         return response.Result.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
                     },
-                    onRetryAsync: (e, ts, i, ctx) => Task.CompletedTask
+                    onRetryAsync: async (e, ts, i, ctx) => 
+                    {                        
+                        logger.LogWarning("Retry attempt {attemptIndex} after {totalSeconds} seconds due to {statusCode} when calling {url}.", i, ts.TotalSeconds, e.Result.StatusCode, e.Result?.RequestMessage?.RequestUri);
+                        await Task.CompletedTask;
+                    }
                 );
-                //.WaitAndRetryAsync(delay);
+            //.WaitAndRetryAsync(delay);
 
         }
     }

@@ -49,15 +49,15 @@ namespace AdbToPurview.Function
                     }
 
                     _logger.LogInformation($"PurviewOut-ParserService:Processing lineage for Synapse Workspace {olSynapseEvent.OlEvent.Job.Namespace.Split(",").First()}");
-                    var purviewSynapseEvent1 = _olToPurviewParsingService.GetParentEntity(olSynapseEvent);
+                    var purviewSynapseEvent1 = await _olToPurviewParsingService.GetParentEntityAsync(olSynapseEvent);
                     _logger.LogInformation($"PurviewOut-ParserService: {purviewSynapseEvent1}");
-                    var jObjectPurviewEvent1 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent1!) ?? new JObject();
+                    var jObjectPurviewEvent1 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent1!) ?? [];
                     _logger.LogInformation("Calling SendToPurview");
                     await _purviewIngestion.SendToPurview(jObjectPurviewEvent1);
 
                     var purviewSynapseEvent2 = _olToPurviewParsingService.GetChildEntity(olSynapseEvent);
                     _logger.LogInformation($"PurviewOut-ParserService: {purviewSynapseEvent2}");
-                    var jObjectPurviewEvent2 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent2!) ?? new JObject();
+                    var jObjectPurviewEvent2 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent2!) ?? [];
                     _logger.LogInformation("Calling SendToPurview");
                     await _purviewIngestion.SendToPurview(jObjectPurviewEvent2);
                 }

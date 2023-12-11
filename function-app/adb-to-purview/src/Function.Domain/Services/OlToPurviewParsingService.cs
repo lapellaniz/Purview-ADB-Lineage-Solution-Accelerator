@@ -11,6 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Function.Domain.Models.SynapseSpark;
 using Function.Domain.Providers;
 using System.Linq;
+using Microsoft.FeatureManagement;
+using System.Text;
+using Function.Domain.Constants;
 
 namespace Function.Domain.Services
 {
@@ -23,18 +26,20 @@ namespace Function.Domain.Services
         private ILoggerFactory _loggerFactory;
         const string PREFIX = "{\"entities\": [";
         const string SUFFIX = "]}";
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
+        private readonly IFeatureManager _featureManager;
 
         /// <summary>
         /// Constructs the OlToPurviewParsingService from the Function framework using DI
         /// </summary>
         /// <param name="loggerFactory">Logger Factory to support DI from function framework or code calling helper classes</param>
         /// <param name="config">Function framework config from DI</param>
-        public OlToPurviewParsingService(ILoggerFactory loggerFactory, IConfiguration config)
+        public OlToPurviewParsingService(ILoggerFactory loggerFactory, IConfiguration config, IFeatureManager featureManager)
         {
             _logger = loggerFactory.CreateLogger<OlToPurviewParsingService>();
             _loggerFactory = loggerFactory;
             _config = config;
+            _featureManager = featureManager;
         }
         
         /// <summary>
@@ -66,21 +71,35 @@ namespace Function.Domain.Services
             }
         }
 
-        public string? GetParentEntity(EnrichedSynapseEvent eventData)
+        public async Task<string?> GetParentEntityAsync(EnrichedSynapseEvent eventData)
         {
             if (eventData == null)
             {
                 return null;
             }
-           
+
+            // Parse           
             var parser = new SynapseToPurviewParser(_loggerFactory, _config, eventData);
             SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
             SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);
+                    
+            // Build entity JSON to return
+            StringBuilder entityJsonBuilder = new();
+            entityJsonBuilder.Append(PREFIX);
 
-            var synapseWorkspaceStr = JsonConvert.SerializeObject(synapseWorkspace);
+            // Append Workspace asset if feature is enabled
+            if (await _featureManager.IsEnabledAsync(FeatureFlags.CreateOrUpdateSynapseAsset))
+            {
+                var synapseWorkspaceStr = JsonConvert.SerializeObject(synapseWorkspace);
+                entityJsonBuilder.Append(synapseWorkspaceStr);
+                entityJsonBuilder.Append(',');
+            }
+
             var synapseNotebookStr = JsonConvert.SerializeObject(synapseNotebook);
+            entityJsonBuilder.Append(synapseNotebookStr);
+            entityJsonBuilder.Append(SUFFIX);
 
-            return $"{PREFIX}{synapseWorkspaceStr},{synapseNotebookStr}{SUFFIX}";
+            return entityJsonBuilder.ToString();
         }
 
         public string? GetChildEntity(EnrichedSynapseEvent eventData)
