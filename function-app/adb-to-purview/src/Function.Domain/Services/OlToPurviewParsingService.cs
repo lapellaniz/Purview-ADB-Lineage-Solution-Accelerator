@@ -24,7 +24,6 @@ namespace Function.Domain.Services
         const string PREFIX = "{\"entities\": [";
         const string SUFFIX = "]}";
         private IConfiguration _config;
-        private ISynapseClientProvider _synapseClientProvider;
 
         /// <summary>
         /// Constructs the OlToPurviewParsingService from the Function framework using DI
@@ -36,7 +35,6 @@ namespace Function.Domain.Services
             _logger = loggerFactory.CreateLogger<OlToPurviewParsingService>();
             _loggerFactory = loggerFactory;
             _config = config;
-            _synapseClientProvider = new SynapseClientProvider(loggerFactory, _config);
         }
         
         /// <summary>

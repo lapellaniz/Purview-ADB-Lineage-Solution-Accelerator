@@ -1,19 +1,12 @@
-using Function.Domain.Helpers;
 using Function.Domain.Models.Settings;
 using Function.Domain.Models.OL;
-using Function.Domain.Models.Adb;
 using Function.Domain.Models.Purview;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using Newtonsoft.Json;
-using Function.Domain.Providers;
-using Function.Domain.Models.SynapseSpark;
-using System.Threading.Tasks;
 
 namespace Function.Domain.Helpers
 {
@@ -29,14 +22,12 @@ namespace Function.Domain.Helpers
         private readonly IColParser? _colParser;
         private readonly EnrichedSynapseEvent? _eEvent;
         private readonly string? _synapseWorkspaceUrl;
-
-        private readonly ISynapseClientProvider _synapseClientProvider;
         const string SETTINGS = "OlToPurviewMappings";
 
 
 
         /// <summary>
-        /// Constructor for DatabricksToPurviewParser
+        /// Constructor for SynapseToPurviewParser
         /// </summary>
         /// <param name="loggerFactory">Loggerfactory from Function framework DI</param>
         /// <param name="configuration">Configuration from Function framework DI</param>
@@ -44,8 +35,7 @@ namespace Function.Domain.Helpers
         public SynapseToPurviewParser(ILoggerFactory loggerFactory, IConfiguration configuration, EnrichedSynapseEvent eEvent)
         {
             _logger = loggerFactory.CreateLogger<SynapseToPurviewParser>();
-            _loggerFactory = loggerFactory;
-            _synapseClientProvider = new SynapseClientProvider(loggerFactory, configuration);
+            _loggerFactory = loggerFactory;            
 
             try
             {
@@ -73,15 +63,9 @@ namespace Function.Domain.Helpers
         }
 
         /// <summary>
-        /// Gets the job type from the supported ADB job types.  Currently all are supported except Spark Submit jobs.
+        /// Creates a Purview Synapse workspace object for an enriched event
         /// </summary>
-        /// <returns></returns>
-
-
-        /// <summary>
-        /// Creates a Purview Databricks workspace object for an enriched event
-        /// </summary>
-        /// <returns>A Databricks workspace object</returns>
+        /// <returns>A Synapse workspace object</returns>
         public SynapseWorkspace GetSynapseWorkspace()
         {
             SynapseWorkspace synapseWorkspace = new();
@@ -101,14 +85,15 @@ namespace Function.Domain.Helpers
 
             string notebookPath = $"/notebooks/{sparkNoteBookName}";
 
-            var result = _synapseClientProvider.GetSparkNotebookSource(_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0], sparkNoteBookName).GetAwaiter().GetResult();
+            // TODO : Refactor to use async.await. remove until then.
+            //var result = _synapseClientProvider.GetSparkNotebookSource(_eEvent!.OlEvent!.Job.Namespace!.Split(",")[0], sparkNoteBookName).GetAwaiter().GetResult();
 
             synapseNotebook.Attributes.Name = sparkNoteBookName;
             synapseNotebook.Attributes.QualifiedName = $"{workspaceQn}/{notebookPath.Trim('/')}";
             synapseNotebook.Attributes.SparkPoolName = sparkClusterName;
             synapseNotebook.Attributes.User = _eEvent!.SynapseRoot!.SparkJobs![0].Submitter!;
             synapseNotebook.Attributes.SparkVersion = _eEvent!.SynapseSparkPool!.Properties!.SparkVersion!;
-            synapseNotebook.Attributes.SourceCodeExplaination = result;
+            //synapseNotebook.Attributes.SourceCodeExplaination = result;
             //synapseNotebook.Attributes.Inputs = inputs;
             //synapseNotebook.Attributes.Outputs = outputs;
             synapseNotebook.RelationshipAttributes.Workspace.QualifiedName = workspaceQn;
@@ -182,44 +167,5 @@ namespace Function.Domain.Helpers
 
             return inputOutputId;
         }
-
-        private string GetInputsOutputsHash(List<InputOutput> inputs, List<InputOutput> outputs)
-        {
-            inputs.Sort((x, y) => x.UniqueAttributes.QualifiedName.CompareTo(y.UniqueAttributes.QualifiedName)); ;
-            StringBuilder sInputs = new StringBuilder(inputs.Count);
-            foreach (var input in inputs)
-            {
-                sInputs.Append(input.UniqueAttributes.QualifiedName.ToLower().ToString());
-                if (!input.Equals(inputs.Last()))
-                {
-                    sInputs.Append(",");
-                }
-            }
-            var inputHash = GenerateMd5Hash(sInputs.ToString());
-            // Outputs should only ever have one item
-            var outputHash = GenerateMd5Hash(outputs[0].UniqueAttributes.QualifiedName.ToString());
-
-            return $"{inputHash}->{outputHash}";
-        }
-
-        private string GenerateMd5Hash(string input)
-        {
-            byte[] tmpSource;
-            byte[] tmpHash;
-
-            //Create a byte array from source data.
-            tmpSource = ASCIIEncoding.ASCII.GetBytes(input);
-
-            //Compute hash based on source data.
-            tmpHash = MD5.Create().ComputeHash(tmpSource);
-
-            StringBuilder sOutput = new StringBuilder(tmpHash.Length);
-            for (int i = 0; i < tmpHash.Length; i++)
-            {
-                sOutput.Append(tmpHash[i].ToString("X2"));
-            }
-            return sOutput.ToString();
-        }
-
     }
 }

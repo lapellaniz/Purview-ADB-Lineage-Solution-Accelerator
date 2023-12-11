@@ -31,13 +31,13 @@ namespace Function.Domain.Services
         /// <param name="configuration">Function framework config from DI</param>
         public OlConsolidateEnrichSynapse(
             ILoggerFactory loggerFactory,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ISynapseClientProvider synapseClientProvider)
         {
             _logger = loggerFactory.CreateLogger<OlConsolidateEnrichSynapse>();
             _loggerFactory = loggerFactory;
             _configuration = configuration;
-            // TODO : Inject via DI
-            _synapseClientProvider = new SynapseClientProvider(loggerFactory, _configuration);
+            _synapseClientProvider = synapseClientProvider;
         }
         public string GetJobNamespace()
         {
@@ -72,12 +72,14 @@ namespace Function.Domain.Services
 
         private async Task<SynapseRoot?> GetSynapseJobAsync(Event eEvent)
         {
+            // NOTEBOOK_NAME_sparkPoolName_sparkApplicationId.sparkPlanId
             string runId = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length - 1];
             return await _synapseClientProvider.GetSynapseJobAsync(long.Parse(runId), eEvent.Job.Namespace.Split(",")[0]);            
         }
 
         private async Task<SynapseSparkPool?> GetSynapseSparkPoolAsync(Event eEvent)
         {
+            // NOTEBOOK_NAME_sparkPoolName_sparkApplicationId.sparkPlanId
             string sparkJobName = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length - 1];
             string sparkNoteBookName = eEvent.Job.Name.Substring(0, eEvent.Job.Name.IndexOf(sparkJobName) - 1);
             string sparkClusterName = sparkNoteBookName.Split("_").Last();
