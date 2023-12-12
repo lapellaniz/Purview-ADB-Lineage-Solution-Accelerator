@@ -49,6 +49,7 @@ namespace Function.Domain.Services
             var trimString = TrimPrefix(strEvent);
             try
             {
+                // Deserialize the event
                 _event = JsonConvert.DeserializeObject<Event>(trimString) ?? new Event();
             }
             catch (JsonSerializationException ex)
@@ -56,34 +57,78 @@ namespace Function.Domain.Services
                 _logger.LogWarning(ex, $"Unrecognized Message: {strEvent}, error: {ex.Message} path: {ex.Path}");
             }
 
-            var validateOlEvent = new ValidateOlEvent(_loggerFactory);
-
             // Validate the event
+            var validateOlEvent = new ValidateOlEvent(_loggerFactory);
             if (!validateOlEvent.Validate(_event))
             {
                 return null;
             }
 
-            SynapseRoot? synapseRoot = await GetSynapseJobAsync(_event);
-            SynapseSparkPool? synapseSparkPool = await GetSynapseSparkPoolAsync(_event);
+            try
+            {
+                // Enrich the event with Synapse information
 
-            return new EnrichedSynapseEvent(_event, synapseRoot, synapseSparkPool);
-        }
+                // WORKSPACE_NAME,synapseKind
+                var workspaceName = _event.Job.Namespace.Split(",").First();
+                // NOTEBOOK_NAME_sparkPoolName_sparkApplicationId.sparkPlanId
+                var jobNameParts = _event.Job.Name.Split(".");
+                var jobSynapseName = jobNameParts.First();
+                var jobSynapseNameParts = jobSynapseName.Split("_");
+                var sparkPoolName = string.Empty;
+                var sparkApplicationId = string.Empty;
+                var notebookName = string.Empty;
 
-        private async Task<SynapseRoot?> GetSynapseJobAsync(Event eEvent)
-        {
-            // NOTEBOOK_NAME_sparkPoolName_sparkApplicationId.sparkPlanId
-            string runId = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length - 1];
-            return await _synapseClientProvider.GetSynapseJobAsync(long.Parse(runId), eEvent.Job.Namespace.Split(",")[0]);            
-        }
+                // Enrich Job Details
+                if (jobSynapseNameParts.Length > 1)
+                {
+                    sparkApplicationId = jobSynapseNameParts.Last();
+                    sparkPoolName = jobSynapseNameParts[^2];
+                    notebookName = jobSynapseName.Substring(0, jobSynapseName.IndexOf(sparkPoolName) - 1);
+                }
 
-        private async Task<SynapseSparkPool?> GetSynapseSparkPoolAsync(Event eEvent)
-        {
-            // NOTEBOOK_NAME_sparkPoolName_sparkApplicationId.sparkPlanId
-            string sparkJobName = eEvent.Job.Name.Split(".")[0].Split("_")[eEvent.Job.Name.Split(".")[0].Split("_").Length - 1];
-            string sparkNoteBookName = eEvent.Job.Name.Substring(0, eEvent.Job.Name.IndexOf(sparkJobName) - 1);
-            string sparkClusterName = sparkNoteBookName.Split("_").Last();
-            return await _synapseClientProvider.GetSynapseSparkPoolsAsync(eEvent.Job.Namespace.Split(",")[0], sparkClusterName);
+                // Enrich RunId
+                if (!long.TryParse(sparkApplicationId, out long runId))
+                {
+                    throw new Exception($"Unable to parse runId '{sparkApplicationId}' from job name: {_event.Job.Name}");
+                }
+
+                // Get Synapse Job and Spark Pool Details
+                SynapseRoot? synapseRoot = await _synapseClientProvider.GetSynapseJobAsync(runId, workspaceName);
+                SynapseSparkPool? synapseSparkPool = await _synapseClientProvider.GetSynapseSparkPoolsAsync(workspaceName, sparkPoolName);
+
+                // Enrich Notebook Name from Synapse Job Details
+                if (synapseRoot != null)
+                {
+                    var sparkJob = synapseRoot?.SparkJobs?.FirstOrDefault();
+                    if (sparkJob != null)
+                    {
+                        _logger.LogInformation("Using SynapseRoot for enrichment: {sparkJobName}", sparkJob.Name);
+                        //NOTEBOOK_NAME_sparkPoolName_sparkApplicationId
+                        var sparkJobName = sparkJob.Name ?? string.Empty;
+                        var sparkJobNameParts = sparkJobName.Split("_");
+                        var sparkJobPoolName = sparkJob.SparkPoolName ?? sparkJobNameParts[^2];
+                        if (sparkJobNameParts.Length > 1)
+                        {
+                            notebookName = sparkJobName.Substring(0, sparkJobName.IndexOf(sparkJobPoolName) - 1);
+                        }
+                    }
+                }
+
+                // TODO : Validate notebookname and expected vars are set.
+
+                return new EnrichedSynapseEvent(_event, synapseRoot, synapseSparkPool)
+                {
+                    OlJobWorkspace = workspaceName,
+                    SparkPoolName = sparkPoolName,
+                    SparkApplicationId = sparkApplicationId,
+                    NotebookName = notebookName
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating enriched event for job '{jobId}': {errorMessage}", _event.Job.Name, ex.Message);
+                throw;
+            }
         }
 
         private string TrimPrefix(string strEvent)

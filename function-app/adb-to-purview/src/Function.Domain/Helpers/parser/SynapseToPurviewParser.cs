@@ -20,7 +20,7 @@ namespace Function.Domain.Helpers
         private readonly ParserSettings _parserConfig;
         private readonly IQnParser? _qnParser;
         private readonly IColParser? _colParser;
-        private readonly EnrichedSynapseEvent? _eEvent;
+        private readonly EnrichedSynapseEvent _eEvent;
         private readonly string? _synapseWorkspaceUrl;
         const string SETTINGS = "OlToPurviewMappings";
 
@@ -35,11 +35,11 @@ namespace Function.Domain.Helpers
         public SynapseToPurviewParser(ILoggerFactory loggerFactory, IConfiguration configuration, EnrichedSynapseEvent eEvent)
         {
             _logger = loggerFactory.CreateLogger<SynapseToPurviewParser>();
-            _loggerFactory = loggerFactory;            
+            _loggerFactory = loggerFactory;
 
             try
             {
-                var map = configuration[SETTINGS];
+                var map = configuration[SETTINGS] ?? throw new MissingCriticalDataException("critical config not found");
                 _parserConfig = JsonConvert.DeserializeObject<ParserSettings>(map) ?? throw new MissingCriticalDataException("critical config not found");
             }
             catch (Exception ex)
@@ -48,18 +48,18 @@ namespace Function.Domain.Helpers
                 throw;
             }
 
-            if (eEvent.OlEvent != null)
+            if (eEvent.OlEvent == null)
             {
-                _eEvent = eEvent;
-                _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.dev.azuresynapse.net"; ;
-                _parserConfig.AdbWorkspaceUrl = this.GetSynapseWorkspace().Attributes.Name;
-                _qnParser = new QnParser(_parserConfig, _loggerFactory, null);
-
-                _colParser = new ColParser(_parserConfig, _loggerFactory,
-                                        _eEvent.OlEvent,
-                                        _qnParser);
+                throw new ArgumentNullException(nameof(eEvent));
             }
 
+            _eEvent = eEvent;
+            _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.dev.azuresynapse.net"; ;
+            _parserConfig.AdbWorkspaceUrl = this.GetSynapseWorkspace().Attributes.Name;
+            _qnParser = new QnParser(_parserConfig, _loggerFactory, null);
+            _colParser = new ColParser(_parserConfig, _loggerFactory,
+                                    _eEvent.OlEvent,
+                                    _qnParser);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Function.Domain.Helpers
         public SynapseWorkspace GetSynapseWorkspace()
         {
             SynapseWorkspace synapseWorkspace = new();
-            string workspaceName = _eEvent!.OlEvent!.Job.Namespace!.Split(",")[0];
+            string workspaceName = _eEvent.OlJobWorkspace;
             synapseWorkspace.Attributes.Name = $"{workspaceName}";
             synapseWorkspace.Attributes.QualifiedName = $"https://{workspaceName}.azuresynapse.net";
             return synapseWorkspace;
@@ -78,11 +78,8 @@ namespace Function.Domain.Helpers
         public SynapseNotebook GetSynapseNotebook(string workspaceQn)
         {
             var synapseNotebook = new SynapseNotebook();
-            string sparkjobname = _eEvent!.OlEvent!.Job.Name.Split(".")[0].Split("_")[_eEvent!.OlEvent!.Job.Name.Split(".")[0].Split("_").Length - 1];
-            string sparkNoteBookName = _eEvent!.OlEvent!.Job.Name.Substring(0, _eEvent!.OlEvent!.Job.Name.IndexOf(sparkjobname) - 1);
-            string sparkClusterName = sparkNoteBookName.Split("_").Last();
-            sparkNoteBookName = String.Join("_", sparkNoteBookName.Split("_").Take(sparkNoteBookName.Split("_").Length - 1));
-
+            string sparkNoteBookName = _eEvent!.NotebookName;
+            string sparkClusterName =  _eEvent!.SparkPoolName;
             string notebookPath = $"/notebooks/{sparkNoteBookName}";
 
             // TODO : Refactor to use async.await. remove until then.
@@ -130,7 +127,7 @@ namespace Function.Domain.Helpers
                 outputs.Add(GetInputOutputs(output));
             }
 
-            synapseProcess.Attributes = GetProcAttributes(sparkNotebookQn, inputs, outputs, _eEvent.OlEvent);
+            synapseProcess.Attributes = GetProcAttributes(sparkNotebookQn, inputs, outputs, _eEvent.OlEvent, synapseNotebook);
             synapseProcess.Attributes.SparkPoolName = synapseNotebook.Attributes.SparkPoolName;
             synapseProcess.Attributes.User = synapseNotebook.Attributes.User;
             synapseProcess.Attributes.SparkVersion = synapseNotebook.Attributes.SparkVersion;
@@ -143,13 +140,12 @@ namespace Function.Domain.Helpers
 
 
 
-        private SynapseProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent)
+        private SynapseProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent, SynapseNotebook synapseNotebook)
         {
             var pa = new SynapseProcessAttributes();
-            string sparkjobname = sparkEvent.Job.Name.Split(".")[0].Split("_")[sparkEvent.Job.Name.Split(".")[0].Split("_").Length - 1];
-            string sparkNoteBookName = sparkEvent.Job.Name.Substring(0, sparkEvent.Job.Name.IndexOf(sparkjobname) - 1);
+            string sparkNoteBookName = synapseNotebook.Attributes.Name;
             pa.Name = sparkNoteBookName + "-lineage";
-            pa.QualifiedName = taskQn + "-lineage"; //+ sparkEvent.Outputs[0].Name;
+            pa.QualifiedName = taskQn + "-lineage";
             pa.ColumnMapping = JsonConvert.SerializeObject(_colParser!.GetColIdentifiers());
             //pa.SparkPlan = sparkEvent.Run.Facets.SparkLogicalPlan.ToString(Formatting.None);
             pa.Inputs = inputs;
@@ -161,8 +157,10 @@ namespace Function.Domain.Helpers
         private InputOutput GetInputOutputs(IInputsOutputs inOut)
         {
             var id = _qnParser!.GetIdentifiers(inOut.NameSpace, inOut.Name);
-            var inputOutputId = new InputOutput();
-            inputOutputId.TypeName = id.PurviewType;
+            var inputOutputId = new InputOutput
+            {
+                TypeName = id.PurviewType
+            };
             inputOutputId.UniqueAttributes.QualifiedName = id.QualifiedName;
 
             return inputOutputId;
