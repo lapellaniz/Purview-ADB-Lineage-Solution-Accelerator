@@ -21,7 +21,6 @@ namespace Function.Domain.Helpers
         private readonly IQnParser? _qnParser;
         private readonly IColParser? _colParser;
         private readonly EnrichedSynapseEvent _eEvent;
-        private readonly string? _synapseWorkspaceUrl;
         const string SETTINGS = "OlToPurviewMappings";
 
 
@@ -54,8 +53,7 @@ namespace Function.Domain.Helpers
             }
 
             _eEvent = eEvent;
-            _synapseWorkspaceUrl = $"https://{_eEvent.OlEvent.Job.Namespace.Split(",")[0]}.dev.azuresynapse.net"; ;
-            _parserConfig.AdbWorkspaceUrl = this.GetSynapseWorkspace().Attributes.Name;
+            _parserConfig.AdbWorkspaceUrl = _eEvent.OlJobWorkspace; // What is this used for?
             _qnParser = new QnParser(_parserConfig, _loggerFactory, null);
             _colParser = new ColParser(_parserConfig, _loggerFactory,
                                     _eEvent.OlEvent,
@@ -69,9 +67,8 @@ namespace Function.Domain.Helpers
         public SynapseWorkspace GetSynapseWorkspace()
         {
             SynapseWorkspace synapseWorkspace = new();
-            string workspaceName = _eEvent.OlJobWorkspace;
-            synapseWorkspace.Attributes.Name = $"{workspaceName}";
-            synapseWorkspace.Attributes.QualifiedName = $"https://{workspaceName}.azuresynapse.net";
+            synapseWorkspace.Attributes.Name = _eEvent.OlJobWorkspace; // This must match the Purview Asset Name
+            synapseWorkspace.Attributes.QualifiedName = $"https://{_eEvent.OlJobWorkspace}.azuresynapse.net";
             return synapseWorkspace;
         }
 
