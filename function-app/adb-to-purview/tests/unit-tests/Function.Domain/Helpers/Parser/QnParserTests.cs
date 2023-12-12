@@ -102,6 +102,12 @@ namespace UnitTests.Function.Domain.Helpers
                     "sales.region", 
                     "mssql://purviewadbsynapsews.sql.azuresynapse.net/SQLPool1/sales/region")]
 
+        // ABFSS
+        [InlineData("abfss://rawhistlatestnpii@studfrawnpiidveu202.dfs.core.windows.net",
+                    "raw/chronic_condition_1997_2021/ccw_chronic_condition_algorithms_1997_2021_current",
+                    "mssql://synw-udf-dlz-dv-eu2-01-ondemand.sql.azuresynapse.net/raw/dbo/ccw_chronic_condition_algorithms_1997_2021_current")]
+
+
         public void GetIdentifiers_OlSource_ReturnsPurviewIdentifier(string nameSpace, string name, string expectedResult)
         {
             var rslt = _qnparser.GetIdentifiers(nameSpace, name);
