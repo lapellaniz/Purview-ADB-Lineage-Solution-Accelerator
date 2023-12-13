@@ -42,6 +42,7 @@ namespace TestFunc
                         s.AddScoped<OlConsolodateEnrich>();
                         s.AddScoped<OlConsolidateEnrichSynapse>();
                         s.AddScoped<IOlConsolidateEnrichFactory, OlConsolidateEnrichFactory>();
+                        s.AddScoped<IOlMessageConsolidation, OlSynapseMessageConsolidation>();
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
                         s.AddTransient<IOlMessageProvider, OlMessageProvider>();
                         s.AddHttpClient<ISynapseClientProvider, SynapseClientProvider>()
