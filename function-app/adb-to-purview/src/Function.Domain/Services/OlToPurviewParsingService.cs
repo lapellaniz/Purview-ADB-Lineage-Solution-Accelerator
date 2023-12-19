@@ -3,17 +3,14 @@ using System.Threading.Tasks;
 using Function.Domain.Models.OL;
 using Function.Domain.Models.Purview;
 using Function.Domain.Models.Adb;
-using Function.Domain.Models.Settings;
 using Newtonsoft.Json;
 using Function.Domain.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using Function.Domain.Models.SynapseSpark;
-using Function.Domain.Providers;
-using System.Linq;
 using Microsoft.FeatureManagement;
 using System.Text;
 using Function.Domain.Constants;
+using Function.Domain.Helpers.Parsers.Synapse;
 
 namespace Function.Domain.Services
 {
@@ -28,18 +25,20 @@ namespace Function.Domain.Services
         const string SUFFIX = "]}";
         private readonly IConfiguration _config;
         private readonly IFeatureManager _featureManager;
+        private readonly ISynapseToPurviewParserFactory _synapseToPurviewParserFactory;
 
         /// <summary>
         /// Constructs the OlToPurviewParsingService from the Function framework using DI
         /// </summary>
         /// <param name="loggerFactory">Logger Factory to support DI from function framework or code calling helper classes</param>
         /// <param name="config">Function framework config from DI</param>
-        public OlToPurviewParsingService(ILoggerFactory loggerFactory, IConfiguration config, IFeatureManager featureManager)
+        public OlToPurviewParsingService(ILoggerFactory loggerFactory, IConfiguration config, IFeatureManager featureManager, ISynapseToPurviewParserFactory synapseToPurviewParserFactory)
         {
             _logger = loggerFactory.CreateLogger<OlToPurviewParsingService>();
             _loggerFactory = loggerFactory;
             _config = config;
             _featureManager = featureManager;
+            _synapseToPurviewParserFactory = synapseToPurviewParserFactory ?? throw new ArgumentNullException(nameof(synapseToPurviewParserFactory));
         }
         
         /// <summary>
@@ -79,7 +78,7 @@ namespace Function.Domain.Services
             }
 
             // Parse           
-            var parser = new SynapseToPurviewParser(_loggerFactory, _config, eventData);
+            var parser = _synapseToPurviewParserFactory.Create(eventData);
             SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
             SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);
                     
@@ -102,17 +101,17 @@ namespace Function.Domain.Services
             return entityJsonBuilder.ToString();
         }
 
-        public string? GetChildEntity(EnrichedSynapseEvent eventData)
+        public async Task<string?> GetChildEntityAsync(EnrichedSynapseEvent eventData)
         {
             if (eventData == null)
             {
                 return null;
             }
 
-            var parser = new SynapseToPurviewParser(_loggerFactory, _config, eventData);
+            var parser = _synapseToPurviewParserFactory.Create(eventData);
             SynapseWorkspace synapseWorkspace = parser.GetSynapseWorkspace();
             SynapseNotebook synapseNotebook = parser.GetSynapseNotebook(synapseWorkspace.Attributes.QualifiedName);            
-            SynapseProcess synapseProcess = parser.GetSynapseProcess(synapseNotebook.Attributes.QualifiedName, synapseNotebook);
+            SynapseProcess synapseProcess = await parser.GetSynapseProcessAsync(synapseNotebook.Attributes.QualifiedName, synapseNotebook);
 
             var synapseProcessStr = JsonConvert.SerializeObject(synapseProcess);
             return $"{PREFIX}{synapseProcessStr}{SUFFIX}";

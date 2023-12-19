@@ -7,8 +7,10 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Function.Domain.Helpers.Hash;
+using System.Threading.Tasks;
 
-namespace Function.Domain.Helpers
+namespace Function.Domain.Helpers.Parsers.Synapse
 {
     /// <summary>
     /// Creates Purview Databricks objects from OpenLineage and ADB data from the jobs API
@@ -21,6 +23,7 @@ namespace Function.Domain.Helpers
         private readonly IQnParser? _qnParser;
         private readonly IColParser? _colParser;
         private readonly EnrichedSynapseEvent _eEvent;
+        private readonly IPurviewAssetNameHashBroker _purviewAssetNameHashBroker;
         const string SETTINGS = "OlToPurviewMappings";
 
 
@@ -31,10 +34,11 @@ namespace Function.Domain.Helpers
         /// <param name="loggerFactory">Loggerfactory from Function framework DI</param>
         /// <param name="configuration">Configuration from Function framework DI</param>
         /// <param name="eEvent">The enriched event which combines OpenLineage data with data from ADB get job API</param>
-        public SynapseToPurviewParser(ILoggerFactory loggerFactory, IConfiguration configuration, EnrichedSynapseEvent eEvent)
+        public SynapseToPurviewParser(ILoggerFactory loggerFactory, IConfiguration configuration, EnrichedSynapseEvent eEvent, IPurviewAssetNameHashBroker purviewAssetNameHashBroker)
         {
             _logger = loggerFactory.CreateLogger<SynapseToPurviewParser>();
             _loggerFactory = loggerFactory;
+            _purviewAssetNameHashBroker = purviewAssetNameHashBroker ?? throw new ArgumentNullException(nameof(purviewAssetNameHashBroker));
 
             try
             {
@@ -94,7 +98,7 @@ namespace Function.Domain.Helpers
             return synapseNotebook;
         }
 
-        public SynapseProcess GetSynapseProcess(string sparkNotebookQn, SynapseNotebook synapseNotebook)
+        public async Task<SynapseProcess> GetSynapseProcessAsync(string sparkNotebookQn, SynapseNotebook synapseNotebook)
         {
             var synapseProcess = new SynapseProcess();
             //var ColumnAttributes = new ColumnLevelAttributes();
@@ -124,7 +128,7 @@ namespace Function.Domain.Helpers
                 outputs.Add(GetInputOutputs(output));
             }
 
-            synapseProcess.Attributes = GetProcAttributes(sparkNotebookQn, inputs, outputs, _eEvent.OlEvent, synapseNotebook);
+            synapseProcess.Attributes = await GetProcAttributesAsync(sparkNotebookQn, inputs, outputs, _eEvent.OlEvent, synapseNotebook);
             synapseProcess.Attributes.SparkPoolName = synapseNotebook.Attributes.SparkPoolName;
             synapseProcess.Attributes.User = synapseNotebook.Attributes.User;
             synapseProcess.Attributes.SparkVersion = synapseNotebook.Attributes.SparkVersion;
@@ -137,12 +141,14 @@ namespace Function.Domain.Helpers
 
 
 
-        private SynapseProcessAttributes GetProcAttributes(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent, SynapseNotebook synapseNotebook)
+        private async Task<SynapseProcessAttributes> GetProcAttributesAsync(string taskQn, List<InputOutput> inputs, List<InputOutput> outputs, Event sparkEvent, SynapseNotebook synapseNotebook)
         {
             var pa = new SynapseProcessAttributes();
+            // TODO : refactor and make async
+            var nameHash = await _purviewAssetNameHashBroker.CreateHashAsync(inputs, outputs);
             string sparkNoteBookName = synapseNotebook.Attributes.Name;
-            pa.Name = sparkNoteBookName + "-lineage";
-            pa.QualifiedName = taskQn + "-lineage";
+            pa.Name = $"{sparkNoteBookName}-lineage-{nameHash}";
+            pa.QualifiedName = $"{taskQn}/processes/{nameHash}";
             pa.ColumnMapping = JsonConvert.SerializeObject(_colParser!.GetColIdentifiers());
             //pa.SparkPlan = sparkEvent.Run.Facets.SparkLogicalPlan.ToString(Formatting.None);
             pa.Inputs = inputs;

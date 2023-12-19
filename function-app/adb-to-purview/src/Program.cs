@@ -15,6 +15,8 @@ using Polly.Contrib.WaitAndRetry;
 using System.Threading.Tasks;
 using Polly.Retry;
 using Microsoft.FeatureManagement;
+using Function.Domain.Helpers.Parsers.Synapse;
+using Function.Domain.Helpers.Hash;
 
 namespace TestFunc
 {
@@ -43,6 +45,8 @@ namespace TestFunc
                         s.AddScoped<OlConsolidateEnrichSynapse>();
                         s.AddScoped<IOlConsolidateEnrichFactory, OlConsolidateEnrichFactory>();
                         s.AddScoped<IOlMessageConsolidation, OlSynapseMessageConsolidation>();
+                        s.AddScoped<ISynapseToPurviewParserFactory, SynapseToPurviewParserFactory>();
+                        s.AddScoped<IPurviewAssetNameHashBroker, PurviewAssetNameHashBroker>();
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
                         s.AddTransient<IOlMessageProvider, OlMessageProvider>();
                         s.AddHttpClient<ISynapseClientProvider, SynapseClientProvider>()

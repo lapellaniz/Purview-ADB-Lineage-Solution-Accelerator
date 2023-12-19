@@ -55,7 +55,7 @@ namespace AdbToPurview.Function
                     _logger.LogInformation("Calling SendToPurview");
                     await _purviewIngestion.SendToPurview(jObjectPurviewEvent1);
 
-                    var purviewSynapseEvent2 = _olToPurviewParsingService.GetChildEntity(olSynapseEvent);
+                    var purviewSynapseEvent2 = await _olToPurviewParsingService.GetChildEntityAsync(olSynapseEvent);
                     _logger.LogInformation($"PurviewOut-ParserService: {purviewSynapseEvent2}");
                     var jObjectPurviewEvent2 = JsonConvert.DeserializeObject<JObject>(purviewSynapseEvent2!) ?? [];
                     _logger.LogInformation("Calling SendToPurview");

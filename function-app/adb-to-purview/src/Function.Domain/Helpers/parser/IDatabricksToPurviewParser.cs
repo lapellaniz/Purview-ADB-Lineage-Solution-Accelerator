@@ -17,16 +17,4 @@ namespace Function.Domain.Helpers
         public DatabricksProcess GetDatabricksProcess(string taskQn);
         public JobType GetJobType();
     }
-
-
-    public interface ISynapseToPurviewParser
-    {
-        public SynapseWorkspace GetSynapseWorkspace();
-
-        public SynapseNotebook GetSynapseNotebook(string workspaceQn);
-
-        public SynapseProcess GetSynapseProcess(string sparkNotebookQn, SynapseNotebook synapseNotebook);
-        
-        //public SynapseProcess GetSynapseProcess(string taskQn);
-    }
 }
