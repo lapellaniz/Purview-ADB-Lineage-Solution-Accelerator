@@ -19,7 +19,7 @@ namespace unit_tests.Function.Domain.Helpers.Hash
         }
 
         [Fact]
-        public async Task Given_Data_Expect_HashValid()
+        public async Task Given_Data_When_HashingOLMessageInputsAndOutputs_Expect_HashValid()
         {
             // Arrange
             InputOutput input = new()
@@ -49,7 +49,7 @@ namespace unit_tests.Function.Domain.Helpers.Hash
         }
 
         [Fact]
-        public async Task Given_Data_Expect_HashNotNullOrEmpty()
+        public async Task Given_Data_When_HashingOLMessageInputsAndOutputs_Expect_HashNotNullOrEmpty()
         {
             // Arrange
             InputOutput input = new()
