@@ -20,7 +20,7 @@ namespace Function.Domain.Helpers.Hash
             var inputHash = await CreateHash(inputs);
             var outputHash = await CreateHash(outputs);
 
-            return $"{inputHash}->{outputHash}";
+            return $"{inputHash}-{outputHash}";
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Function.Domain.Helpers.Hash
             var uniqueData = data.OrderBy(x => x.UniqueAttributes.QualifiedName)
                         .Aggregate(new StringBuilder(), (sb, item) => sb.AppendFormat("{0},", item.UniqueAttributes.QualifiedName.ToLower()))
                         .ToString().TrimEnd(',');
-            var ms = new MemoryStream(ASCIIEncoding.ASCII.GetBytes(uniqueData));
+            var ms = new MemoryStream(Encoding.UTF8.GetBytes(uniqueData));
             var hashData = await MD5.HashDataAsync(ms);            
             return string.Concat(hashData.Select(b => b.ToString("x2")));
         }

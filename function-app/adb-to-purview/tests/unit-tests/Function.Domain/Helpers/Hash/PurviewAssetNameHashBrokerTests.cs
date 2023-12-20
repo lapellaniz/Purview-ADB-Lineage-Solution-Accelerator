@@ -45,7 +45,7 @@ namespace unit_tests.Function.Domain.Helpers.Hash
             // Assert
             Assert.NotNull(actual);
             Assert.NotEmpty(actual);
-            Assert.Equal("b5f7f2b3e491718deb69195be3284b1b->45fe4506e05c5b111ba406dd35388141", actual);
+            Assert.Equal("b5f7f2b3e491718deb69195be3284b1b-45fe4506e05c5b111ba406dd35388141", actual);
         }
 
         [Fact]
