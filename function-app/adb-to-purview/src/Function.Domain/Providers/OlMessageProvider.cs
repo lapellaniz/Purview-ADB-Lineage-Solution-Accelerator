@@ -16,7 +16,7 @@ namespace Function.Domain.Providers
 
         public async Task SaveAsync(string content)
         {
-            var blobClient = _blobClientFactory.Create($"{DateTime.UtcNow:s}_{Guid.NewGuid()}.json");
+            var blobClient = _blobClientFactory.Create("ol-messages", $"{DateTime.UtcNow:s}_{Guid.NewGuid()}.json");
             await blobClient.UploadAsync(BinaryData.FromString(content), overwrite: true);
         }
     }

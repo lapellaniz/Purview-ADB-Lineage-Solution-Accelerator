@@ -103,27 +103,14 @@ namespace Function.Domain.Helpers.Parsers.Synapse
             var synapseProcess = new SynapseProcess();
             //var ColumnAttributes = new ColumnLevelAttributes();
 
-            List<Inputs> eventInputs;
-            var eventOutputs = _eEvent!.OlEvent!.Outputs.ToList();
-            // Assumes that when outputs are empty and we have multiple inputs, the first input is the sink and the rest are the source
-            if (eventOutputs.Count == 0 && _eEvent!.OlEvent!.Inputs.Count > 1)
-            {
-                eventInputs = _eEvent!.OlEvent!.Inputs.Skip(1).DistinctBy(i => i.Name).ToList();
-                eventOutputs = _eEvent!.OlEvent!.Inputs.Take(1).Select(i => new Outputs { Name = i.Name, NameSpace = i.NameSpace }).ToList();
-            }
-            else
-            {
-                eventInputs = _eEvent!.OlEvent!.Inputs.ToList();
-            }
-
             var inputs = new List<InputOutput>();
-            foreach (IInputsOutputs input in eventInputs)
+            foreach (IInputsOutputs input in _eEvent!.OlEvent!.Inputs)
             {
                 inputs.Add(GetInputOutputs(input));
             }
 
             var outputs = new List<InputOutput>();
-            foreach (IInputsOutputs output in eventOutputs)
+            foreach (IInputsOutputs output in _eEvent!.OlEvent!.Outputs)
             {
                 outputs.Add(GetInputOutputs(output));
             }

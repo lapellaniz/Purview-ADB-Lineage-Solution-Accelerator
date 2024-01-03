@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Function.Domain.Helpers;
 using Function.Domain.Helpers.Parser;
 using Function.Domain.Models.OL;
 using Function.Domain.Models.SynapseSpark;
@@ -23,6 +24,7 @@ namespace Function.Domain.Services
         private readonly IConfiguration _configuration;
         private Event _event = new Event();
         private ISynapseClientProvider _synapseClientProvider;
+        private readonly IBlobClientFactory _blobClientFactory;
 
         /// <summary>
         /// Constructs the OlConsolodateEnrich object from the Function framework using DI
@@ -32,12 +34,14 @@ namespace Function.Domain.Services
         public OlConsolidateEnrichSynapse(
             ILoggerFactory loggerFactory,
             IConfiguration configuration,
-            ISynapseClientProvider synapseClientProvider)
+            ISynapseClientProvider synapseClientProvider,
+            IBlobClientFactory blobClientFactory)
         {
             _logger = loggerFactory.CreateLogger<OlConsolidateEnrichSynapse>();
             _loggerFactory = loggerFactory;
             _configuration = configuration;
             _synapseClientProvider = synapseClientProvider;
+            _blobClientFactory = blobClientFactory;
         }
         public string GetJobNamespace()
         {
@@ -64,6 +68,13 @@ namespace Function.Domain.Services
                 return null;
             }
 
+            // capture - start/complete
+            // store / n_b_loinc_raw_to_conformed_lratest_1701716033 /input / - 
+            // get list of capture event based upon the run id = 1701716033
+            // can we consolidate ? 1 input and 1 output = yes , return null flase scenarios
+            // currrent event = update with full input and output // poceed further
+            // TODO Mani remove the comments
+
             try
             {
                 // Enrich the event with Synapse information
@@ -77,6 +88,15 @@ namespace Function.Domain.Services
                 var sparkPoolName = string.Empty;
                 var sparkApplicationId = string.Empty;
                 var notebookName = string.Empty;
+
+                // Message Consolidation
+                var olSynapseMessageConsolidation = new OlSynapseMessageConsolidation(_loggerFactory, _blobClientFactory);
+                _event = await olSynapseMessageConsolidation.ConsolidateEventAsync(_event, jobSynapseName);
+
+                if (_event == null)
+                {
+                    return null;
+                }
 
                 // Enrich Job Details
                 if (jobSynapseNameParts.Length > 1)
