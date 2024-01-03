@@ -19,6 +19,8 @@ Azure Function that handles the outgoing API call to send messages to Purview.
     - `PurviewOut-ParserService:`
 - View JSON sent to Purview
     - `Sending this payload to Purview:`
+- View synapse process asset sent to Purview
+    - `azure_synapse_process`
 
 ## Log Entries
 
