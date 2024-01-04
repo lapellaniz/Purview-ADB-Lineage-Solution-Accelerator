@@ -68,13 +68,6 @@ namespace Function.Domain.Services
                 return null;
             }
 
-            // capture - start/complete
-            // store / n_b_loinc_raw_to_conformed_lratest_1701716033 /input / - 
-            // get list of capture event based upon the run id = 1701716033
-            // can we consolidate ? 1 input and 1 output = yes , return null flase scenarios
-            // currrent event = update with full input and output // poceed further
-            // TODO Mani remove the comments
-
             try
             {
                 // Enrich the event with Synapse information

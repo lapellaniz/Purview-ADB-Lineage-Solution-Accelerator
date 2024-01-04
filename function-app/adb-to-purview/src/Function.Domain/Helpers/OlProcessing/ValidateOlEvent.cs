@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 using Function.Domain.Models.OL;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Function.Domain.Helpers.Parser
 {
@@ -72,45 +71,12 @@ namespace Function.Domain.Helpers.Parser
         private bool ValidateSynapseOlEvent(Event olEvent)
         {
             // So far, we have only seen START and COMPLETE events where we either have inputs or outputs. 
-            // The data sources are never different ones where consolidation would resolve it. 
-            // The ones that have both show the same datasource in  I/O.
-            // Currently the assumption is that the first input is the sink and the rest of the inputs are the source(s).
+            //Assumption is that all messages must be allowed as long as there is an input / output in order to correlate them at the end....
             if (olEvent.Inputs.Count == 0 && olEvent.Outputs.Count == 0)
             {
                 return false;
             }
-            //if (InOutEqual(olEvent))   // TO DO check mani  and the above comments
-            //{
-            //    return false;
-            //}
-
             return true;
-            //// So far, we have only seen START and COMPLETE events where we either have inputs or outputs. 
-            //// The data sources are never different ones where consolidation would resolve it. 
-            //// The ones that have both show the same datasource in  I/O.
-            //// Currently the assumption is that the first input is the sink and the rest of the inputs are the source(s).
-            //if (olEvent.Inputs.Count == 0)
-            //{
-            //    return false;
-            //}
-            //if (olEvent.EventType != "COMPLETE")// && olEvent.EventType != "START")
-            //{
-            //    return false;
-            //}
-            //if (olEvent.Inputs.Count <= 1 && olEvent.Outputs.Count == 0)
-            //{
-            //    return false;
-            //}
-            //if (olEvent.Inputs.Count == 0 && olEvent.Outputs.Count > 0)
-            //{
-            //    return false;
-            //}
-            //if (InOutEqual(olEvent))
-            //{
-            //    return false;
-            //}
-
-            //return true;
         }
 
         private bool InOutEqual(Event ev)

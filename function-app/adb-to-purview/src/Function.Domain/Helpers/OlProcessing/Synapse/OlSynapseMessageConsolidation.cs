@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Function.Domain.Models.OL;
 using Function.Domain.Services;
-using Microsoft.Azure.Amqp;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -30,36 +26,29 @@ namespace Function.Domain.Helpers
         {
             try
             {
-                //string prefixInput = runId + "/Input/";
-                //string prefixOutput = runId + "/Output/";
-
                 string prefixInput = runId + "/Input/";
                 string prefixOutput = runId + "/Output/";
 
                 List<Task> inputUploadTasks = new List<Task>();
                 List<Task> outputUploadTasks = new List<Task>();
 
-                // Generate GUIDs outside the loop
-                List<string> inputBlobNames = Enumerable.Range(0, olEvent.Inputs.Count)
-                    .Select(_ => prefixInput + Guid.NewGuid())
-                    .ToList();
-
-                List<string> outputBlobNames = Enumerable.Range(0, olEvent.Outputs.Count)
-                    .Select(_ => prefixOutput + Guid.NewGuid())
-                    .ToList();
+                //Assumption: We assume the number of input / outputs is small so parallelism is currently unbounded.
+                //TODO : Implement bounded parallel calls using batch/ chunk if there are huge input/outputs
 
                 // Parallelize input uploads
-                inputUploadTasks.AddRange(olEvent.Inputs.Select((item, index) =>
+                inputUploadTasks.AddRange(olEvent.Inputs.Select((item) =>
                 {
                     var inputJson = JsonConvert.SerializeObject(item);
-                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, inputBlobNames[index], inputJson);
+                    string inputBlobName = prefixInput + GetUniqueHash(item.Name, item.NameSpace);
+                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
                 }));
 
                 // Parallelize output uploads
-                outputUploadTasks.AddRange(olEvent.Outputs.Select((item, index) =>
+                outputUploadTasks.AddRange(olEvent.Outputs.Select((item) =>
                 {
                     var outputJson = JsonConvert.SerializeObject(item);
-                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, outputBlobNames[index], outputJson);
+                    string outputBlobName = prefixOutput + GetUniqueHash(item.Name, item.NameSpace);
+                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
                 }));
 
                 // Await all upload tasks
@@ -96,17 +85,16 @@ namespace Function.Domain.Helpers
                     // Message Consolidation - Update inputs / outputs to the current olevent object
                     if (inputsList.Count > 0)
                     {
-                        olEvent.Inputs = inputsList;
+                        olEvent.Inputs.Clear();
+                        olEvent.Inputs.AddRange(inputsList);
                     }
 
+                    // to do change
                     if (outputsList.Count > 0)
                     {
-                        olEvent.Outputs = outputsList;
+                        olEvent.Outputs.Clear();
+                        olEvent.Outputs.AddRange(outputsList);
                     }
-                    // TO DO check mani - parallel foreach
-                    // TO DO check mani -  any uniqueness in input and output
-                    // if we have same event same i/o it will add , any error further
-                    // Do we need to do distinct on names of input or output etc
                     return olEvent;
                 }
                 else
@@ -116,8 +104,18 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"OlSynapseMessageConsolidation-ConsolidateEventAsync: Error {ex.Message} ");
-                throw;  // TO DO check mani - throw if there is any error?
+                _log.LogError(ex, $"OlSynapseMessageConsolidation-ConsolidateEventAsync: Error {ex.InnerException} ", ex.Message);
+                throw;
+            }
+        }
+
+        private string GetUniqueHash(string name, string namespaceValue)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                string combinedValues = $"{name}{namespaceValue}";
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedValues));
+                return BitConverter.ToString(hashBytes).Replace("-", "");
             }
         }
     }
