@@ -24,7 +24,7 @@ namespace Function.Domain.Services
         private readonly IConfiguration _configuration;
         private Event _event = new Event();
         private ISynapseClientProvider _synapseClientProvider;
-        private readonly IBlobClientFactory _blobClientFactory;
+        private readonly IBlobProvider _blobProvider;
 
         /// <summary>
         /// Constructs the OlConsolodateEnrich object from the Function framework using DI
@@ -35,13 +35,13 @@ namespace Function.Domain.Services
             ILoggerFactory loggerFactory,
             IConfiguration configuration,
             ISynapseClientProvider synapseClientProvider,
-            IBlobClientFactory blobClientFactory)
+            IBlobProvider blobProvider)
         {
             _logger = loggerFactory.CreateLogger<OlConsolidateEnrichSynapse>();
             _loggerFactory = loggerFactory;
             _configuration = configuration;
             _synapseClientProvider = synapseClientProvider;
-            _blobClientFactory = blobClientFactory;
+            _blobProvider = blobProvider;
         }
         public string GetJobNamespace()
         {
@@ -83,7 +83,7 @@ namespace Function.Domain.Services
                 var notebookName = string.Empty;
 
                 // Message Consolidation
-                var olSynapseMessageConsolidation = new OlSynapseMessageConsolidation(_loggerFactory, _blobClientFactory);
+                var olSynapseMessageConsolidation = new OlSynapseMessageConsolidation(_loggerFactory, _blobProvider);
                 _event = await olSynapseMessageConsolidation.ConsolidateEventAsync(_event, jobSynapseName);
 
                 if (_event == null)

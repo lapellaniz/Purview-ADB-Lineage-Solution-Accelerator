@@ -14,8 +14,7 @@ namespace Function.Domain.Services
     public class BlobClientFactory : IBlobClientFactory
     {
         private readonly BlobServiceClient _blobServiceClient;
-        private BlobContainerClient _blobContainerClient;
-
+        
         public BlobClientFactory(IConfiguration config, ILogger<BlobClientFactory> logger)
         {
             var tenantId = config["TenantId"];
@@ -34,63 +33,21 @@ namespace Function.Domain.Services
             _blobServiceClient = new(
                 new Uri($"https://{accountName}.blob.core.windows.net"),
                 new DefaultAzureCredential(credentialConfig));
-            //_blobContainerClient = _blobServiceClient.GetBlobContainerClient("ol-messages");
-            //_blobContainerClient.CreateIfNotExists(Azure.Storage.Blobs.Models.PublicAccessType.None);
             logger.LogInformation("BlobClientFactory created for {accountName}", accountName);
         }
 
-        public BlobClient Create(string containerName, string name)
+        public async Task<BlobClient> GetBlobClientAsync(string containerName, string name)
         {
-            GetBlobContainer(containerName);
-            return _blobContainerClient.GetBlobClient(name);
+            var containerClient = await this.GetBlobContainerClientAsync(containerName);
+            return containerClient.GetBlobClient(name);
         }
 
-        public async Task UploadAsync(string containerName, string blobName, string jsonObject)
+        public async Task<BlobContainerClient> GetBlobContainerClientAsync(string containerName)
         {
-            var blobClient = Create(containerName, blobName);
-            byte[] data = Encoding.UTF8.GetBytes(jsonObject);
-            using (var stream = new MemoryStream(data))
-            {
-                await blobClient.UploadAsync(stream, new BlobUploadOptions
-                {
-                    HttpHeaders = new BlobHttpHeaders { ContentType = "application/json" },
-                });
-            }
-        }
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
 
-        public async Task<List<string>> GetBlobsByHierarchyAsync(string folderPrefix)
-        {
-            List<string> blobNames = new List<string>();
-            await foreach (var blobItem in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: folderPrefix))
-            {
-                blobNames.Add(blobItem.Blob.Name);
-            }
-
-            return blobNames;
-        }
-
-        public async Task<string> DownloadBlobAsync(string containerName, string blobName)
-        {
-            var blobClient = Create(containerName, blobName);
-            using (MemoryStream stream = new MemoryStream())
-            {
-                await blobClient.DownloadToAsync(stream);
-                stream.Position = 0;
-                byte[] blobContent = stream.ToArray();
-                return System.Text.Encoding.UTF8.GetString(blobContent);
-            }
-        }
-
-        public async Task<bool> ExistsAsync(string containerName, string blobName)
-        {
-            var blobClient = Create(containerName, blobName);
-            return await blobClient.ExistsAsync();
-        }
-
-        private void GetBlobContainer(string containerName)
-        {
-            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-            _blobContainerClient.CreateIfNotExists(PublicAccessType.None);
+            return containerClient;
         }
     }
 }

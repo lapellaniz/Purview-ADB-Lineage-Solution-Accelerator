@@ -14,12 +14,12 @@ namespace Function.Domain.Helpers
     public class OlSynapseMessageConsolidation : IOlMessageConsolidation
     {
         private ILogger _log;
-        private readonly IBlobClientFactory _blobClientFactory;
+        private readonly IBlobProvider _blobProvider;
         private const string CONTAINER_NAME = "ol-synapsemessages";
-        public OlSynapseMessageConsolidation(ILoggerFactory loggerFactory, IBlobClientFactory blobClientFactory)
+        public OlSynapseMessageConsolidation(ILoggerFactory loggerFactory, IBlobProvider blobProvider)
         {
             _log = loggerFactory.CreateLogger<OlSynapseMessageConsolidation>();
-            _blobClientFactory = blobClientFactory;
+            _blobProvider = blobProvider;
         }
 
         public async Task<Event?> ConsolidateEventAsync(Event olEvent, string runId)
@@ -53,9 +53,9 @@ namespace Function.Domain.Helpers
                 var inputJson = JsonConvert.SerializeObject(item);
                 string inputBlobName = prefixInput + GetUniqueHash(item.Name, item.NameSpace);
                 // Check if the blob already exists
-                if (!await _blobClientFactory.ExistsAsync(CONTAINER_NAME, inputBlobName))
+                if (!await _blobProvider.BlobExistsAsync(CONTAINER_NAME, inputBlobName))
                 {
-                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
+                    return _blobProvider.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
                 }
                 // If it already exists, return a completed task
                 return Task.CompletedTask;
@@ -67,9 +67,9 @@ namespace Function.Domain.Helpers
                 var outputJson = JsonConvert.SerializeObject(item);
                 string outputBlobName = prefixOutput + GetUniqueHash(item.Name, item.NameSpace);
                 // Check if the blob already exists
-                if (!await _blobClientFactory.ExistsAsync(CONTAINER_NAME, outputBlobName))
+                if (!await _blobProvider.BlobExistsAsync(CONTAINER_NAME, outputBlobName))
                 {
-                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
+                    return _blobProvider.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
                 }
 
                 // If it already exists, return a completed task
@@ -81,8 +81,8 @@ namespace Function.Domain.Helpers
 
 
             // Get list of input and outputs which are stored in blob
-            List<string> inputs = await _blobClientFactory.GetBlobsByHierarchyAsync(prefixInput);
-            List<string> outputs = await _blobClientFactory.GetBlobsByHierarchyAsync(prefixOutput);
+            List<string> inputs = await _blobProvider.GetBlobsByHierarchyAsync(prefixInput, CONTAINER_NAME);
+            List<string> outputs = await _blobProvider.GetBlobsByHierarchyAsync(prefixOutput, CONTAINER_NAME);
             return (inputs, outputs);
         }
 
@@ -97,14 +97,14 @@ namespace Function.Domain.Helpers
                 // Get all the inputs
                 List<Task<Inputs?>> inputTasks = result.Inputs.Select(async item =>
                 {
-                    var inputObject = await _blobClientFactory.DownloadBlobAsync(CONTAINER_NAME, item);
+                    var inputObject = await _blobProvider.DownloadBlobAsync(CONTAINER_NAME, item);
                     return JsonConvert.DeserializeObject<Inputs?>(inputObject);
                 }).ToList();
 
                 // Get all the outputs
                 List<Task<Outputs?>> outputTasks = result.Outputs.Select(async item =>
                 {
-                    var outputObject = await _blobClientFactory.DownloadBlobAsync(CONTAINER_NAME, item);
+                    var outputObject = await _blobProvider.DownloadBlobAsync(CONTAINER_NAME, item);
                     return JsonConvert.DeserializeObject<Outputs?>(outputObject);
                 }).ToList();
 
