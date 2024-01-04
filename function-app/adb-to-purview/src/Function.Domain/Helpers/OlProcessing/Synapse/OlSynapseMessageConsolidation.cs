@@ -1,59 +1,145 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Function.Domain.Models.OL;
+using Function.Domain.Services;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Function.Domain.Helpers
 {
     public class OlSynapseMessageConsolidation : IOlMessageConsolidation
     {
-        public Task<Event?> ConsolidateEvent(Event olEvent, string runId)
+        private ILogger _log;
+        private readonly IBlobProvider _blobProvider;
+        private const string CONTAINER_NAME = "ol-synapsemessages";
+        public OlSynapseMessageConsolidation(ILoggerFactory loggerFactory, IBlobProvider blobProvider)
         {
-            throw new System.NotImplementedException();        
+            _log = loggerFactory.CreateLogger<OlSynapseMessageConsolidation>();
+            _blobProvider = blobProvider;
         }
 
-        // ProcessStart
-        // ProcessComplete
-        // CaptureEvent (start and complete)
-        // ShouldConsolidateMessage    
-        // GetCapturedEvents
-        // ConsolidateEvents
+        public async Task<Event?> ConsolidateEventAsync(Event olEvent, string runId)
+        {
+            try
+            {
+                var result = await CaptureMessageAsync(olEvent, runId);
+                return await ConsolidateEventsAsync(olEvent, result);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "OlSynapseMessageConsolidation-ConsolidateEventAsync: ErrorMessage {ErrorMessage} ", ex.Message);
+                throw;
+            }
+        }
 
-        /*
-        * 1. If message is start or complete capture it.
-        * 2. Get list of captured events.
-        * 3. Try to consolidate captured events.
-        *   3.1. Check for unique list of inputs and outputs.
-        * 4. If consolidation is successful, return consolidated event.
+        private async Task<(List<string> Inputs, List<string> Outputs)> CaptureMessageAsync(Event olEvent, string runId)
+        {
+            string prefixInput = runId + "/Input/";
+            string prefixOutput = runId + "/Output/";
 
-        - Consolidated event should only CreateOrUpdate in Purview. When augmenting, it should append to the existing asset.
-        - At what point should we enrich the event with data from Purview? We want to merge the data from Purview with the data from OL.
-        - If an event is consolidated, it should be cached in memory to avoid duplicate consolidation. 
-          Future messages may continue to arrive and trigger consolidation but nothing has changed. 
-          Eventually a change in the inputs/outputs will be noticed and will trigger a new consolidation.
-        - Given the pattern of consolidation returning null if nothing should be processed, this instance can leverage a cache provider to store
-            the consolidated event. This will allow the next message to be skipped without having to re-consolidate the event.
-        - Cache expiration can be weeks or months as the data will not change.
-            - How large will this cache get?
-        - Consider stripping the Spark Logic Plan from the event as this can be quite large and not used.
+            List<Task> inputUploadTasks = new List<Task>();
+            List<Task> outputUploadTasks = new List<Task>();
 
-        
-        */
+            //Assumption: We assume the number of input / outputs is small so parallelism is currently unbounded.
+            //TODO : Implement bounded parallel calls using batch/ chunk if there are huge input/outputs
 
-        /*
-flowchart TD
-    A[Message handler] --> B(CheckMessageStatus)
-    B --> C{IsStart}
-    C --> |No| D(CheckIfEnoughData)
-    C --> |Yes| E(CheckIfExists)    
-    E --> |Yes| F(Skip)
-    E --> |No| G(Log)
-    D --> |No| H(Log)
-    D --> D1(Consolidate SC</br>I/O)
-    D1 --> |Yes| I(CreateOrUpdatePurviewAsset)
-    H --> Z[END]
-    G --> Z[END]
-    F --> Z[END]
-    I --> Z[END]        
-        */
+            // Parallelize input uploads
+            inputUploadTasks.AddRange(olEvent.Inputs.Select(async (item) =>
+            {
+                var inputJson = JsonConvert.SerializeObject(item);
+                string inputBlobName = prefixInput + GetUniqueHash(item.Name, item.NameSpace);
+                // Check if the blob already exists
+                if (!await _blobProvider.BlobExistsAsync(CONTAINER_NAME, inputBlobName))
+                {
+                    return _blobProvider.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
+                }
+                // If it already exists, return a completed task
+                return Task.CompletedTask;
+            }));
 
-    }    
+            // Parallelize output uploads
+            outputUploadTasks.AddRange(olEvent.Outputs.Select(async (item) =>
+            {
+                var outputJson = JsonConvert.SerializeObject(item);
+                string outputBlobName = prefixOutput + GetUniqueHash(item.Name, item.NameSpace);
+                // Check if the blob already exists
+                if (!await _blobProvider.BlobExistsAsync(CONTAINER_NAME, outputBlobName))
+                {
+                    return _blobProvider.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
+                }
+
+                // If it already exists, return a completed task
+                return Task.CompletedTask;
+            }));
+
+            // Await all upload tasks
+            await Task.WhenAll(inputUploadTasks.Concat(outputUploadTasks));
+
+
+            // Get list of input and outputs which are stored in blob
+            List<string> inputs = await _blobProvider.GetBlobsByHierarchyAsync(prefixInput, CONTAINER_NAME);
+            List<string> outputs = await _blobProvider.GetBlobsByHierarchyAsync(prefixOutput, CONTAINER_NAME);
+            return (inputs, outputs);
+        }
+
+        private async Task<Event?> ConsolidateEventsAsync(Event olEvent, (List<string> Inputs, List<string> Outputs) result)
+        {
+            // If there is at least 1 input and 1 output - proceed for message consolidation
+            if (result.Inputs != null && result.Inputs.Count > 0 && result.Outputs != null && result.Outputs.Count > 0)
+            {
+                List<Inputs?> inputsList = new List<Inputs?>();
+                List<Outputs?> outputsList = new List<Outputs?>();
+
+                // Get all the inputs
+                List<Task<Inputs?>> inputTasks = result.Inputs.Select(async item =>
+                {
+                    var inputObject = await _blobProvider.DownloadBlobAsync(CONTAINER_NAME, item);
+                    return JsonConvert.DeserializeObject<Inputs?>(inputObject);
+                }).ToList();
+
+                // Get all the outputs
+                List<Task<Outputs?>> outputTasks = result.Outputs.Select(async item =>
+                {
+                    var outputObject = await _blobProvider.DownloadBlobAsync(CONTAINER_NAME, item);
+                    return JsonConvert.DeserializeObject<Outputs?>(outputObject);
+                }).ToList();
+
+                inputsList = (await Task.WhenAll(inputTasks)).Where(input => input != null).ToList();
+                outputsList = (await Task.WhenAll(outputTasks)).Where(output => output != null).ToList();
+
+                // Message Consolidation - Update inputs / outputs to the current olevent object
+                if (inputsList.Count > 0)
+                {
+                    olEvent.Inputs.Clear();
+                    olEvent.Inputs.AddRange(inputsList);
+                }
+
+                // to do change
+                if (outputsList.Count > 0)
+                {
+                    olEvent.Outputs.Clear();
+                    olEvent.Outputs.AddRange(outputsList);
+                }
+                return olEvent;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private string GetUniqueHash(string name, string namespaceValue)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                string combinedValues = $"{name}{namespaceValue}";
+                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedValues));
+                return BitConverter.ToString(hashBytes).Replace("-", "");
+            }
+        }
+    }
 }

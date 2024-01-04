@@ -5,6 +5,6 @@ namespace Function.Domain.Helpers
 {
     public interface IOlMessageConsolidation
     {
-        Task<Event?> ConsolidateEvent(Event olEvent, string runId);
+        Task<Event?> ConsolidateEventAsync(Event olEvent, string runId);
     }
 }

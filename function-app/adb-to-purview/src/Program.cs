@@ -48,6 +48,7 @@ namespace TestFunc
                         s.AddScoped<ISynapseToPurviewParserFactory, SynapseToPurviewParserFactory>();
                         s.AddScoped<IPurviewAssetNameHashBroker, PurviewAssetNameHashBroker>();
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
+                        s.AddScoped<IBlobProvider, BlobProvider>();
                         s.AddTransient<IOlMessageProvider, OlMessageProvider>();
                         s.AddHttpClient<ISynapseClientProvider, SynapseClientProvider>()
                         .AddPolicyHandler((provider, _) => GetRetryPolicy(provider.GetRequiredService<ILogger<Program>>()));

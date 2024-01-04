@@ -6,18 +6,17 @@ namespace Function.Domain.Providers
 {
     public class OlMessageProvider : IOlMessageProvider
     {
-        private readonly IBlobClientFactory _blobClientFactory;
-        public OlMessageProvider(IBlobClientFactory blobClientFactory)
+        private readonly IBlobProvider _blobProvider;
+        public OlMessageProvider(IBlobProvider blobProvider)
         {
-            _blobClientFactory = blobClientFactory;
+            _blobProvider = blobProvider;
         }
 
         public bool IsEnabled => true;
 
         public async Task SaveAsync(string content)
         {
-            var blobClient = _blobClientFactory.Create($"{DateTime.UtcNow:s}_{Guid.NewGuid()}.json");
-            await blobClient.UploadAsync(BinaryData.FromString(content), overwrite: true);
+            await this._blobProvider.UploadBinaryAsync("ol-messages", $"{DateTime.UtcNow:s}_{Guid.NewGuid()}.json", BinaryData.FromString(content), overwrite: true);
         }
     }
 }

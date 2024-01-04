@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Function.Domain.Helpers;
 using Function.Domain.Helpers.Parser;
 using Function.Domain.Models.OL;
 using Function.Domain.Models.SynapseSpark;
@@ -23,6 +24,7 @@ namespace Function.Domain.Services
         private readonly IConfiguration _configuration;
         private Event _event = new Event();
         private ISynapseClientProvider _synapseClientProvider;
+        private readonly IBlobProvider _blobProvider;
 
         /// <summary>
         /// Constructs the OlConsolodateEnrich object from the Function framework using DI
@@ -32,12 +34,14 @@ namespace Function.Domain.Services
         public OlConsolidateEnrichSynapse(
             ILoggerFactory loggerFactory,
             IConfiguration configuration,
-            ISynapseClientProvider synapseClientProvider)
+            ISynapseClientProvider synapseClientProvider,
+            IBlobProvider blobProvider)
         {
             _logger = loggerFactory.CreateLogger<OlConsolidateEnrichSynapse>();
             _loggerFactory = loggerFactory;
             _configuration = configuration;
             _synapseClientProvider = synapseClientProvider;
+            _blobProvider = blobProvider;
         }
         public string GetJobNamespace()
         {
@@ -77,6 +81,15 @@ namespace Function.Domain.Services
                 var sparkPoolName = string.Empty;
                 var sparkApplicationId = string.Empty;
                 var notebookName = string.Empty;
+
+                // Message Consolidation
+                var olSynapseMessageConsolidation = new OlSynapseMessageConsolidation(_loggerFactory, _blobProvider);
+                _event = await olSynapseMessageConsolidation.ConsolidateEventAsync(_event, jobSynapseName);
+
+                if (_event == null)
+                {
+                    return null;
+                }
 
                 // Enrich Job Details
                 if (jobSynapseNameParts.Length > 1)
