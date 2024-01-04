@@ -31,7 +31,7 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"OlSynapseMessageConsolidation-ConsolidateEventAsync: Error {ex.InnerException} ", ex.Message);
+                _log.LogError(ex, "OlSynapseMessageConsolidation-ConsolidateEventAsync: ErrorMessage {ErrorMessage} ", ex.Message);
                 throw;
             }
         }
