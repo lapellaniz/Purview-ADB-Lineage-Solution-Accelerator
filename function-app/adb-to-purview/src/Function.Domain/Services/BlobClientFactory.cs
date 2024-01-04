@@ -81,6 +81,12 @@ namespace Function.Domain.Services
             }
         }
 
+        public async Task<bool> ExistsAsync(string containerName, string blobName)
+        {
+            var blobClient = Create(containerName, blobName);
+            return await blobClient.ExistsAsync();
+        }
+
         private void GetBlobContainer(string containerName)
         {
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);

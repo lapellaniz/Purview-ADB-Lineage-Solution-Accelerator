@@ -36,19 +36,32 @@ namespace Function.Domain.Helpers
                 //TODO : Implement bounded parallel calls using batch/ chunk if there are huge input/outputs
 
                 // Parallelize input uploads
-                inputUploadTasks.AddRange(olEvent.Inputs.Select((item) =>
+                inputUploadTasks.AddRange(olEvent.Inputs.Select(async (item) =>
                 {
                     var inputJson = JsonConvert.SerializeObject(item);
                     string inputBlobName = prefixInput + GetUniqueHash(item.Name, item.NameSpace);
-                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
+                    // Check if the blob already exists
+                    if (!await _blobClientFactory.ExistsAsync(CONTAINER_NAME, inputBlobName))
+                    {
+                        return _blobClientFactory.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
+                    }
+                    // If it already exists, return a completed task
+                    return Task.CompletedTask;
                 }));
 
                 // Parallelize output uploads
-                outputUploadTasks.AddRange(olEvent.Outputs.Select((item) =>
+                outputUploadTasks.AddRange(olEvent.Outputs.Select(async (item) =>
                 {
                     var outputJson = JsonConvert.SerializeObject(item);
                     string outputBlobName = prefixOutput + GetUniqueHash(item.Name, item.NameSpace);
-                    return _blobClientFactory.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
+                    // Check if the blob already exists
+                    if (!await _blobClientFactory.ExistsAsync(CONTAINER_NAME, outputBlobName))
+                    {
+                        return _blobClientFactory.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
+                    }
+
+                    // If it already exists, return a completed task
+                    return Task.CompletedTask;
                 }));
 
                 // Await all upload tasks
