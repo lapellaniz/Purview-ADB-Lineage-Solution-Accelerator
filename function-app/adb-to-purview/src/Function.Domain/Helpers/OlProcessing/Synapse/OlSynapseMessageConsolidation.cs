@@ -134,12 +134,9 @@ namespace Function.Domain.Helpers
 
         private string GetUniqueHash(string name, string namespaceValue)
         {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                string combinedValues = $"{name}{namespaceValue}";
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(combinedValues));
-                return BitConverter.ToString(hashBytes).Replace("-", "");
-            }
+            string combinedValues = $"{name}{namespaceValue}";
+            byte[] hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(combinedValues));
+            return BitConverter.ToString(hashBytes).Replace("-", "");
         }
     }
 }
