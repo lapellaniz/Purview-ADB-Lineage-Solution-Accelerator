@@ -48,5 +48,22 @@ namespace UnitTests.Function.Domain.Helpers.OlProcessing
             // Assert
             Xunit.Assert.False(actual);
         }
+
+        [Fact]
+        public async Task Validate_SynapseOlMessageWithNoIO_OutputExists_ReturnsTrue()
+        {
+            // Arrange
+            var olPayload = "{\"eventTime\":\"2023-12-05T18:07:00.6Z\",\"producer\":\"https://github.com/OpenLineage/OpenLineage/tree/1.4.1/integration/spark\",\"schemaURL\":\"https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent\",\"eventType\":\"COMPLETE\",\"run\":{\"runId\":\"f51d312d-adf0-4187-ac90-23d563a6d21e\"},\"job\":{\"namespace\":\"synw-udf-dlz-dv-eu2-01,azuresynapsespark\",\"name\":\"n_b_ccw_ref_condition_raw_to_conformed_lratest_1701799232.execute_merge_into_command.reference_ref_cndtn\",\"facets\":{}},\"inputs\":[],\"outputs\":[{\"namespace\":\"abfss://conformednpii@studfmodelnpiidveu204.dfs.core.windows.net\",\"name\":\"/reference/ref_cndtn\",\"outputFacets\":{}}]}";
+            var olEvent = JsonConvert.DeserializeObject<Event>(olPayload);
+
+            // Act
+            Xunit.Assert.NotNull(olEvent);
+            var actual = _validator.Validate(olEvent);
+
+            // Chnage the validation logi
+
+            // Assert
+            Xunit.Assert.True(actual);
+        }
     }
 }
