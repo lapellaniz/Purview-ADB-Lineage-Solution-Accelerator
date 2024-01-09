@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Function.Domain.Models.OL;
-using Function.Domain.Models.SynapseSpark;
 using Function.Domain.Providers;
-using Function.Domain.Services;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Extensions.Logging;
 
 namespace Function.Domain.Helpers
@@ -44,7 +41,6 @@ namespace Function.Domain.Helpers
 
                 if (outputs.Count > 0)
                 {
-                    //outputs.Add(new Outputs { Name = "/reference/ref_cndtn", NameSpace = "abfss://conformednpii@studfmodelnpiidveu204.dfs.core.windows.net" });
                     olEvent.Outputs = MergeAndDistinct(olEvent.Outputs, outputs, x => x.Name, x => x.NameSpace);
                 }
             }
@@ -68,7 +64,6 @@ namespace Function.Domain.Helpers
                 {
                     T instance = factoryMethod(item, nameSpace);
                     result.Add(instance);
-                    //result.Add((T)Activator.CreateInstance(typeof(T), new object[] { item, nameSpace }));
                 }
             }
             return result;
