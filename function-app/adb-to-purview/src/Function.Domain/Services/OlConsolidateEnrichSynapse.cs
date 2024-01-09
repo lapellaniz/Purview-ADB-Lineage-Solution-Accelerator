@@ -82,6 +82,11 @@ namespace Function.Domain.Services
                 var sparkApplicationId = string.Empty;
                 var notebookName = string.Empty;
 
+                // Message Enrichment
+                var olSynapseMessageEnrichment = new OlSynapseMessageEnrichment(_loggerFactory, _synapseClientProvider);
+                _event = await olSynapseMessageEnrichment.EnrichmentEventAsync(_event, workspaceName);
+
+
                 // Message Consolidation
                 var olSynapseMessageConsolidation = new OlSynapseMessageConsolidation(_loggerFactory, _blobProvider);
                 _event = await olSynapseMessageConsolidation.ConsolidateEventAsync(_event, jobSynapseName);

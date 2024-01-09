@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json.Linq;
 
 namespace Function.Domain.Providers
 {
@@ -105,7 +106,7 @@ namespace Function.Domain.Providers
 
         public async Task<SynapseRoot?> GetSynapseJobAsync(long runId, string synapseWorkspaceName)
         {
-            if(_cache.TryGetValue<SynapseRoot>(runId, out SynapseRoot? cachedSynapseRoot))
+            if (_cache.TryGetValue<SynapseRoot>(runId, out SynapseRoot? cachedSynapseRoot))
             {
                 return cachedSynapseRoot;
             }
@@ -147,11 +148,11 @@ namespace Function.Domain.Providers
 
         public async Task<SynapseSparkPool?> GetSynapseSparkPoolsAsync(string synapseWorkspaceName, string synapseSparkPoolName)
         {
-            if(_cache.TryGetValue<SynapseSparkPool>(synapseSparkPoolName, out SynapseSparkPool? cachedSynapseSparkPool))
+            if (_cache.TryGetValue<SynapseSparkPool>(synapseSparkPoolName, out SynapseSparkPool? cachedSynapseSparkPool))
             {
                 return cachedSynapseSparkPool;
             }
-            
+
             if (isTokenExpired(_bearerToken))
             {
                 await GetBearerTokenAsync();
@@ -249,7 +250,57 @@ namespace Function.Domain.Providers
 
             }
 
+        }
 
+        public async Task<string> GetSynapseStorageLocation(string synapseWorkspaceName, string databaseTableName)
+        {
+            if (_cache.TryGetValue<string>(databaseTableName, out string? cachedSynapseStorageLocation))
+            {
+                return cachedSynapseStorageLocation;
+            }
+
+            if (isTokenExpired(_bearerToken))
+            {
+                await GetBearerTokenAsync();
+
+                if (_bearerToken is null)
+                {
+                    _log.LogError("SynapseClient-GetSynapseJobAsync: unable to get bearer token");
+                    return null;
+                }
+            }
+
+            var values = databaseTableName.Split('/');
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri($"https://{synapseWorkspaceName}.dev.azuresynapse.net/databases/{values[1]}/tables{values[2]}?api-version=2021-04-01"),
+                Method = HttpMethod.Get,
+            };
+
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Bearer", _bearerToken!.RawData);
+            string location = string.Empty;
+            try
+            {
+                var tokenResponse = await _client.SendAsync(request);
+
+                tokenResponse.EnsureSuccessStatusCode();
+                var response = await tokenResponse.Content.ReadAsStringAsync();
+                JObject jsonObject = JObject.Parse(response);
+                string responseValue = jsonObject?["properties"]?["StorageDescriptor"]?["Source"]?["Location"]?.Value<string>() ?? string.Empty;
+                if (!string.IsNullOrEmpty(responseValue))
+                {
+                    // Use Uri class to extract the domain
+                    Uri uri = new Uri(responseValue);
+                    location = uri.GetLeftPart(UriPartial.Authority);
+                    _cache.Set(databaseTableName, location, TimeSpan.FromHours(5));
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, $"SynapseClient-GetSynapseJobAsync: error, message: {ex.Message}");
+            }
+            return location;
         }
 
         private async Task<string> GetOpenAICompletions(string sparkNotebookSource)

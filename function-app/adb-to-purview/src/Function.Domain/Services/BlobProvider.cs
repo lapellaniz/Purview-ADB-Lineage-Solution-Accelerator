@@ -28,10 +28,7 @@ namespace Function.Domain.Services
             byte[] data = Encoding.UTF8.GetBytes(jsonObject);
             using (var stream = new MemoryStream(data))
             {
-                await blobClient.UploadAsync(stream, new BlobUploadOptions
-                {
-                    HttpHeaders = new BlobHttpHeaders { ContentType = "application/json" },
-                });
+                await blobClient.UploadAsync(stream);
             }
         }
 
