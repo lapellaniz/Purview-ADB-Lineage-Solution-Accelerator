@@ -8,9 +8,5 @@ namespace Function.Domain.Models.OL
         [JsonProperty("namespace")]
         public string NameSpace { get; set; } = "";
 
-        public static Inputs CreateInstance(string item, string namespaceValue)
-        {
-            return new Inputs { Name = item, NameSpace = namespaceValue };
-        }
     }
 }

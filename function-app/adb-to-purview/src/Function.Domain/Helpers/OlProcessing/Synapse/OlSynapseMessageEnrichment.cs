@@ -30,18 +30,18 @@ namespace Function.Domain.Helpers
                 var targetNames = CaptureName(olEvent, "target");
 
                 // Capture Namespace
-                List<Inputs> inputs = await CaptureNameSpaceAsync<Inputs>(sourceNames, workspaceName);
-                List<Outputs> outputs = await CaptureNameSpaceAsync<Outputs>(targetNames, workspaceName);
+                List<IInputsOutputs> inputs = await CaptureNameSpaceAsync<Inputs>(sourceNames, workspaceName);
+                List<IInputsOutputs> outputs = await CaptureNameSpaceAsync<Outputs>(targetNames, workspaceName);
 
                 // Merge and create a distinct collection based on Name and NameSpace
                 if (inputs.Count > 0)
                 {
-                    olEvent.Inputs = MergeAndDistinct(olEvent.Inputs, inputs, x => x.Name, x => x.NameSpace);
+                    olEvent.Inputs = MergeAndDistinct(olEvent.Inputs.Cast<IInputsOutputs>().ToList(), inputs, x => x.Name, x => x.NameSpace).OfType<Inputs>().ToList();
                 }
 
                 if (outputs.Count > 0)
                 {
-                    olEvent.Outputs = MergeAndDistinct(olEvent.Outputs, outputs, x => x.Name, x => x.NameSpace);
+                    olEvent.Outputs = MergeAndDistinct(olEvent.Outputs.Cast<IInputsOutputs>().ToList(), outputs, x => x.Name, x => x.NameSpace).OfType<Outputs>().ToList();
                 }
             }
             catch (Exception ex)
@@ -51,23 +51,21 @@ namespace Function.Domain.Helpers
             return olEvent;
         }
 
-        private async Task<List<T>> CaptureNameSpaceAsync<T>(HashSet<string> names, string workspaceName)
+        private async Task<List<IInputsOutputs>> CaptureNameSpaceAsync<T>(HashSet<string> names, string workspaceName)
+    where T : IInputsOutputs, new()
         {
-            List<T> result = new List<T>();
-            // Define a delegate for the factory method
-            Func<string, string, T> factoryMethod = (Func<string, string, T>)Delegate.CreateDelegate(typeof(Func<string, string, T>), typeof(T).GetMethod("CreateInstance"));
+            List<IInputsOutputs> result = new List<IInputsOutputs>();
             foreach (var item in names)
             {
                 var values = item.Split('/');
                 var nameSpace = await _synapseClientProvider.GetSynapseStorageLocation(workspaceName, values[1], values[2]);
                 if (!string.IsNullOrEmpty(nameSpace))
                 {
-                    T instance = factoryMethod(item, nameSpace);
-                    result.Add(instance);
+                    result.Add(new T() { Name = item, NameSpace = nameSpace });
                 }
                 else
                 {
-                    _log.LogWarning($"OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for :  {item}");
+                    _log.LogWarning($"OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {values[1]} and table : {values[2]}");
                 }
             }
             return result;
@@ -99,12 +97,10 @@ namespace Function.Domain.Helpers
             return uniqueTableDatabaseNames;
         }
 
-        private static List<T> MergeAndDistinct<T>(List<T> existingList, List<T> newList, params Func<T, object>[] keySelectors)
-         where T : class
+        private static List<IInputsOutputs> MergeAndDistinct(List<IInputsOutputs> existingList, List<IInputsOutputs> newList, params Func<IInputsOutputs, object>[] keySelectors)
         {
-            // TO DO mani check - facets are coming , its getting added
             return existingList
-                .Union(newList)
+                .UnionBy(newList, item => string.Join("_", keySelectors.Select(selector => selector(item))))
                 .ToList();
         }
     }
