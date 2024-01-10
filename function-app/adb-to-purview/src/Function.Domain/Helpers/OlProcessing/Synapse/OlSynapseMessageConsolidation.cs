@@ -50,11 +50,11 @@ namespace Function.Domain.Helpers
             // Parallelize input uploads
             inputUploadTasks.AddRange(olEvent.Inputs.Select(async (item) =>
             {
-                var inputJson = JsonConvert.SerializeObject(item);
                 string inputBlobName = prefixInput + GetUniqueHash(item.Name, item.NameSpace);
                 // Check if the blob already exists
                 if (!await _blobProvider.BlobExistsAsync(CONTAINER_NAME, inputBlobName))
                 {
+                    var inputJson = JsonConvert.SerializeObject(item);
                     return _blobProvider.UploadAsync(CONTAINER_NAME, inputBlobName, inputJson);
                 }
                 // If it already exists, return a completed task
@@ -64,11 +64,11 @@ namespace Function.Domain.Helpers
             // Parallelize output uploads
             outputUploadTasks.AddRange(olEvent.Outputs.Select(async (item) =>
             {
-                var outputJson = JsonConvert.SerializeObject(item);
                 string outputBlobName = prefixOutput + GetUniqueHash(item.Name, item.NameSpace);
                 // Check if the blob already exists
                 if (!await _blobProvider.BlobExistsAsync(CONTAINER_NAME, outputBlobName))
                 {
+                    var outputJson = JsonConvert.SerializeObject(item);
                     return _blobProvider.UploadAsync(CONTAINER_NAME, outputBlobName, outputJson);
                 }
 

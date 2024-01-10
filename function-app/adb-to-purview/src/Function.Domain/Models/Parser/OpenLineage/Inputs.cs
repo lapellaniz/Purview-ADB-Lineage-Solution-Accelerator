@@ -7,5 +7,6 @@ namespace Function.Domain.Models.OL
         public string Name { get; set; } = "";
         [JsonProperty("namespace")]
         public string NameSpace { get; set; } = "";
+
     }
 }

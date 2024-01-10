@@ -9,6 +9,7 @@ namespace Function.Domain.Providers
         public Task<SynapseSparkPool?> GetSynapseSparkPoolsAsync(string synapseWorkspaceName, string synapseSparkPoolName);
 
         public Task<string> GetSparkNotebookSource(string synapseWorkspaceName, string sparkNoteBookName);
+        public Task<string> GetSynapseStorageLocation(string synapseWorkspaceName, string databaseName, string tableName);
     }
 
 }

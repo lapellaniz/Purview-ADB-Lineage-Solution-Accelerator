@@ -60,8 +60,6 @@ namespace UnitTests.Function.Domain.Helpers.OlProcessing
             Xunit.Assert.NotNull(olEvent);
             var actual = _validator.Validate(olEvent);
 
-            // Chnage the validation logi
-
             // Assert
             Xunit.Assert.True(actual);
         }

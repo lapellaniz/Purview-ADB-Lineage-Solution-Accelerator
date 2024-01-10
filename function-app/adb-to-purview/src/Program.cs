@@ -45,6 +45,7 @@ namespace TestFunc
                         s.AddScoped<OlConsolidateEnrichSynapse>();
                         s.AddScoped<IOlConsolidateEnrichFactory, OlConsolidateEnrichFactory>();
                         s.AddScoped<IOlMessageConsolidation, OlSynapseMessageConsolidation>();
+                        s.AddScoped<IOlMessageEnrichment, OlSynapseMessageEnrichment>();
                         s.AddScoped<ISynapseToPurviewParserFactory, SynapseToPurviewParserFactory>();
                         s.AddScoped<IPurviewAssetNameHashBroker, PurviewAssetNameHashBroker>();
                         s.AddSingleton<IBlobClientFactory, BlobClientFactory>();
@@ -67,11 +68,11 @@ namespace TestFunc
                 .WaitAndRetryAsync(
                     5,
                     sleepDurationProvider: (retryAttempt, response, context) =>
-                    {                        
+                    {
                         return response.Result.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
                     },
-                    onRetryAsync: async (e, ts, i, ctx) => 
-                    {                        
+                    onRetryAsync: async (e, ts, i, ctx) =>
+                    {
                         logger.LogWarning("Retry attempt {attemptIndex} after {totalSeconds} seconds due to {statusCode} when calling {url}.", i, ts.TotalSeconds, e.Result.StatusCode, e.Result?.RequestMessage?.RequestUri);
                         await Task.CompletedTask;
                     }

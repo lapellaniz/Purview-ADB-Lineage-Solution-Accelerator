@@ -10,5 +10,6 @@ namespace Function.Domain.Models.OL
         public string NameSpace { get; set; } = "";
         [JsonProperty("facets")]
         public OutputFacets Facets = new OutputFacets();
+
     }
 }
