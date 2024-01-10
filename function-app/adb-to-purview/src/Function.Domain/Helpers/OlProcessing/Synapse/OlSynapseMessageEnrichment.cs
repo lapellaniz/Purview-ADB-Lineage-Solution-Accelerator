@@ -47,9 +47,8 @@ namespace Function.Domain.Helpers
             catch (Exception ex)
             {
                 _log.LogError(ex, "OlSynapseMessageEnrichment-EnrichmentEventAsync: ErrorMessage {ErrorMessage} ", ex.Message);
-                //throw;  // TODO Mani check if it breaks anywhere it will not continue
             }
-            return olEvent;  // TODO Mani check Gaceful return
+            return olEvent;
         }
 
         private async Task<List<T>> CaptureNameSpaceAsync<T>(HashSet<string> names, string workspaceName)
@@ -59,11 +58,16 @@ namespace Function.Domain.Helpers
             Func<string, string, T> factoryMethod = (Func<string, string, T>)Delegate.CreateDelegate(typeof(Func<string, string, T>), typeof(T).GetMethod("CreateInstance"));
             foreach (var item in names)
             {
-                var nameSpace = await _synapseClientProvider.GetSynapseStorageLocation(workspaceName, item);
+                var values = item.Split('/');
+                var nameSpace = await _synapseClientProvider.GetSynapseStorageLocation(workspaceName, values[1], values[2]);
                 if (!string.IsNullOrEmpty(nameSpace))
                 {
                     T instance = factoryMethod(item, nameSpace);
                     result.Add(instance);
+                }
+                else
+                {
+                    _log.LogWarning($"OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for :  {item}");
                 }
             }
             return result;
@@ -96,7 +100,7 @@ namespace Function.Domain.Helpers
         }
 
         private static List<T> MergeAndDistinct<T>(List<T> existingList, List<T> newList, params Func<T, object>[] keySelectors)
-        where T : class
+         where T : class
         {
             // TO DO mani check - facets are coming , its getting added
             return existingList

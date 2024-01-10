@@ -252,9 +252,10 @@ namespace Function.Domain.Providers
 
         }
 
-        public async Task<string> GetSynapseStorageLocation(string synapseWorkspaceName, string databaseTableName)
+        public async Task<string> GetSynapseStorageLocation(string synapseWorkspaceName, string databaseName, string tableName)
         {
-            if (_cache.TryGetValue<string>(databaseTableName, out string? cachedSynapseStorageLocation))
+            string cachedKey = databaseName + tableName;
+            if (_cache.TryGetValue<string>(cachedKey, out string? cachedSynapseStorageLocation))
             {
                 return cachedSynapseStorageLocation;
             }
@@ -270,10 +271,9 @@ namespace Function.Domain.Providers
                 }
             }
 
-            var values = databaseTableName.Split('/');
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"https://{synapseWorkspaceName}.dev.azuresynapse.net/databases/{values[1]}/tables{values[2]}?api-version=2021-04-01"),
+                RequestUri = new Uri($"https://{synapseWorkspaceName}.dev.azuresynapse.net/databases/{databaseName}/tables{tableName}?api-version=2021-04-01"),
                 Method = HttpMethod.Get,
             };
 
@@ -293,12 +293,12 @@ namespace Function.Domain.Providers
                     // Use Uri class to extract the domain
                     Uri uri = new Uri(responseValue);
                     location = uri.GetLeftPart(UriPartial.Authority);
-                    _cache.Set(databaseTableName, location, TimeSpan.FromHours(5));
+                    _cache.Set(cachedKey, location, TimeSpan.FromHours(5));
                 }
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"SynapseClient-GetSynapseJobAsync: error, message: {ex.Message}");
+                _log.LogError(ex, "SynapseClient-GetSynapseStorageLocation: ErrorMessage {ErrorMessage} ", ex.Message);
             }
             return location;
         }
