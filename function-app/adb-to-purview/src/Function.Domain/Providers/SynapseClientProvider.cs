@@ -254,7 +254,7 @@ namespace Function.Domain.Providers
 
         public async Task<string> GetSynapseStorageLocation(string synapseWorkspaceName, string databaseName, string tableName)
         {
-            string cachedKey = databaseName + tableName;
+            string cachedKey = $"{databaseName}_{tableName}";
             if (_cache.TryGetValue<string>(cachedKey, out string? cachedSynapseStorageLocation))
             {
                 return cachedSynapseStorageLocation;
@@ -273,7 +273,7 @@ namespace Function.Domain.Providers
 
             var request = new HttpRequestMessage()
             {
-                RequestUri = new Uri($"https://{synapseWorkspaceName}.dev.azuresynapse.net/databases/{databaseName}/tables{tableName}?api-version=2021-04-01"),
+                RequestUri = new Uri($"https://{synapseWorkspaceName}.dev.azuresynapse.net/databases/{databaseName}/tables/{tableName}?api-version=2021-04-01"),
                 Method = HttpMethod.Get,
             };
 
@@ -298,7 +298,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "SynapseClient-GetSynapseStorageLocation: ErrorMessage {ErrorMessage} ", ex.Message);
+                _log.LogError(ex, "SynapseClient-GetSynapseStorageLocation: Failed to get storage location for {databaseName} and {tableName}. Endpoint: {endpoint}. ErrorMessage {ErrorMessage} ", databaseName, request.RequestUri, tableName, ex.Message);
             }
             return location;
         }
