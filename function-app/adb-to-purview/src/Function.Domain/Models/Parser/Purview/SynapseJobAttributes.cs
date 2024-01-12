@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Function.Domain.Models.Purview
 {
-    public class DatabricksJobAttributes
+    public class SynapseJobAttributes
     {
         [JsonProperty("name")]
         public string Name = "";
@@ -10,7 +10,7 @@ namespace Function.Domain.Models.Purview
         public string QualifiedName = "";
         [JsonProperty("jobId")]
         public long JobId = 0;
-        [JsonProperty("creatorUserName")]
-        public string CreatorUserName = "";
+        [JsonProperty("submitter")]
+        public string Submitter = "";
     }
 }

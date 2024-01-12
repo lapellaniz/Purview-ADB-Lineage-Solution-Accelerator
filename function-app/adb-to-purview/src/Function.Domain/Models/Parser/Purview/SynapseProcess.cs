@@ -2,14 +2,14 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 namespace Function.Domain.Models.Purview
 {
-    public class DatabricksProcess
+    public class SynapseProcess
     {
         [JsonProperty("typeName")]
-        public string TypeName = "databricks_process";
+        public string TypeName = "azure_synapse_process";
         [JsonProperty("attributes")]
-        public DatabricksProcessAttributes Attributes = new DatabricksProcessAttributes();
+        public SynapseProcessAttributes Attributes = new SynapseProcessAttributes();
         [JsonProperty("relationshipAttributes")]
-        public DatabricksProcessRelationshipAttributes RelationshipAttributes = new DatabricksProcessRelationshipAttributes();
+        public SynapseProcessRelationshipAttributes RelationshipAttributes = new SynapseProcessRelationshipAttributes();
         [JsonProperty("columnAttributes")]
         public List<ColumnLevelAttributes> ColumnLevel = new List<ColumnLevelAttributes>();
     }

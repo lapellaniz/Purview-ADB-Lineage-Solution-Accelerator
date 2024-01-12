@@ -6,10 +6,4 @@ namespace Function.Domain.Models.Purview
         [JsonProperty("workspace")]
         public RelationshipAttribute Workspace = new RelationshipAttribute();
     }
-
-    public class SynapseNotebookRelationshipAttributes
-    {
-        [JsonProperty("workspace")]
-        public RelationshipAttribute Workspace = new RelationshipAttribute();
-    }
 }
