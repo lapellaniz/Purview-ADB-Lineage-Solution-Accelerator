@@ -83,10 +83,11 @@ namespace Function.Domain.Helpers
             foreach (var logicalRelation in logicalRelations)
             {
                 // Check for null or empty array
-                if (logicalRelation?["catalogTable"]?["identifier"] != null)
+                var sourceIdentifier = logicalRelation?["catalogTable"]?["identifier"];
+                if (sourceIdentifier != null)
                 {
-                    string table = logicalRelation["catalogTable"]["identifier"]["table"]?.ToString().Trim();
-                    string database = logicalRelation["catalogTable"]["identifier"]["database"]?.ToString().Trim();
+                    string? table = sourceIdentifier["table"]?.ToString().Trim();
+                    string? database = sourceIdentifier["database"]?.ToString().Trim();
 
                     // Check if the table and database are not null or empty
                     if (!string.IsNullOrEmpty(table) && !string.IsNullOrEmpty(database))
