@@ -4,7 +4,7 @@ namespace Function.Domain.Providers
 {
     public interface IOlMessageProvider
     {
-        bool IsEnabled { get; }
+        Task<bool> IsEnabledAsync();
         Task SaveAsync(string content);
     }
 }
