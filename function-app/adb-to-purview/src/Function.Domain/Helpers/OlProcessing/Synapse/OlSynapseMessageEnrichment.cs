@@ -78,8 +78,8 @@ namespace Function.Domain.Helpers
         {
             var sparkPlan = olEvent.Run.Facets.SparkLogicalPlan;
             // check for the uniqueness
-            HashSet<string> uniqueTableDatabaseNames = new HashSet<string>();
-            var logicalRelations = sparkPlan.SelectTokens("$.plan[?(@.class == '" + PLAN_CLASS + "')]." + type + "[?(@.class == '" + SOURCE_CLASS + "')]");
+            HashSet<string> uniqueTableDatabaseNames = [];
+            var logicalRelations = sparkPlan.SelectTokens($"$.plan[?(@.class == '{PLAN_CLASS}')].{type}[?(@.class == '{SOURCE_CLASS}')]");
             foreach (var logicalRelation in logicalRelations)
             {
                 // Check for null or empty array
