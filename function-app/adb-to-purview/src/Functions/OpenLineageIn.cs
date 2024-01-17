@@ -88,7 +88,7 @@ namespace AdbToPurview.Function
                         events.Add(sendEvent);
                         await _producerClient.SendAsync(events, sendEventOptions);
 
-                        if (_olMessageStore.IsEnabled)
+                        if (await _olMessageStore.IsEnabledAsync())
                         {
                             _logger.LogInformation($"OpenLineageIn: Storing incoming file.");
                             // Save to blob storage
@@ -98,7 +98,7 @@ namespace AdbToPurview.Function
                 }
                 else
                 {
-                    if (_olMessageStore.IsEnabled)
+                    if (await _olMessageStore.IsEnabledAsync())
                     {
                         _logger.LogInformation($"OpenLineageIn: Storing skipped file.");
                         // Save to blob storage

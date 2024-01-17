@@ -1,18 +1,24 @@
 using System;
 using System.Threading.Tasks;
 using Function.Domain.Services;
+using Microsoft.FeatureManagement;
 
 namespace Function.Domain.Providers
 {
     public class OlMessageProvider : IOlMessageProvider
     {
         private readonly IBlobProvider _blobProvider;
-        public OlMessageProvider(IBlobProvider blobProvider)
+        private readonly IFeatureManager _featureManager;
+        public OlMessageProvider(IBlobProvider blobProvider, IFeatureManager featureManager)
         {
             _blobProvider = blobProvider;
+            _featureManager = featureManager;
         }
 
-        public bool IsEnabled => true;
+        public async Task<bool> IsEnabledAsync()
+        {
+            return await _featureManager.IsEnabledAsync(Constants.FeatureFlags.Logging.LogOlMessageToExternalStore);
+        }
 
         public async Task SaveAsync(string content)
         {

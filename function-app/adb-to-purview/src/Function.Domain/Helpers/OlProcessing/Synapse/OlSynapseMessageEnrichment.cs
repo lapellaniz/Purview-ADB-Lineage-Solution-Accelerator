@@ -78,15 +78,16 @@ namespace Function.Domain.Helpers
         {
             var sparkPlan = olEvent.Run.Facets.SparkLogicalPlan;
             // check for the uniqueness
-            HashSet<string> uniqueTableDatabaseNames = new HashSet<string>();
-            var logicalRelations = sparkPlan.SelectTokens("$.plan[?(@.class == '" + PLAN_CLASS + "')]." + type + "[?(@.class == '" + SOURCE_CLASS + "')]");
+            HashSet<string> uniqueTableDatabaseNames = [];
+            var logicalRelations = sparkPlan.SelectTokens($"$.plan[?(@.class == '{PLAN_CLASS}')].{type}[?(@.class == '{SOURCE_CLASS}')]");
             foreach (var logicalRelation in logicalRelations)
             {
                 // Check for null or empty array
-                if (logicalRelation?["catalogTable"]?["identifier"] != null)
+                var sourceIdentifier = logicalRelation?["catalogTable"]?["identifier"];
+                if (sourceIdentifier != null)
                 {
-                    string table = logicalRelation["catalogTable"]["identifier"]["table"]?.ToString().Trim();
-                    string database = logicalRelation["catalogTable"]["identifier"]["database"]?.ToString().Trim();
+                    string? table = sourceIdentifier["table"]?.ToString().Trim();
+                    string? database = sourceIdentifier["database"]?.ToString().Trim();
 
                     // Check if the table and database are not null or empty
                     if (!string.IsNullOrEmpty(table) && !string.IsNullOrEmpty(database))
