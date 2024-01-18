@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Function.Domain.Helpers.Hash;
 using System.Threading.Tasks;
+using Function.Domain.Helpers.Logging;
 
 namespace Function.Domain.Helpers.Parsers.Synapse
 {
@@ -47,7 +48,7 @@ namespace Function.Domain.Helpers.Parsers.Synapse
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "SynapseToPurviewParser: Error retrieving ParserSettings.  Please make sure these are configured on your function.");
+                LoggingExtensions.LogError(_logger, ex, ErrorCodes.PurviewOut.SynapseToPurviewParser, "SynapseToPurviewParser: Error retrieving ParserSettings.  Please make sure these are configured on your function: {errorMessage}", ex.Message);
                 throw;
             }
 
@@ -80,7 +81,7 @@ namespace Function.Domain.Helpers.Parsers.Synapse
         {
             var synapseNotebook = new SynapseNotebook();
             string sparkNoteBookName = _eEvent!.NotebookName;
-            string sparkClusterName =  _eEvent!.SparkPoolName;
+            string sparkClusterName = _eEvent!.SparkPoolName;
             string notebookPath = $"/notebooks/{sparkNoteBookName}";
 
             // TODO : Refactor to use async.await. remove until then.
