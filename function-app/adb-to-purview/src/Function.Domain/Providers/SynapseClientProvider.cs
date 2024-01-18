@@ -142,7 +142,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseJob, "SynapseClient-GetSynapseJobAsync: ErrorMessage {ErrorMessage}", ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseJob, "SynapseClient-GetSynapseJobAsync: {ErrorMessage}", ex.Message);
             }
             return resultSynapseRoot;
         }
@@ -184,7 +184,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseSparkPools, "SynapseClient-GetSynapseSparkPoolsAsync: ErrorMessage {ErrorMessage}", ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseSparkPools, "SynapseClient-GetSynapseSparkPoolsAsync: {ErrorMessage}", ex.Message);
             }
             return resultSynapseSparkPool;
         }
@@ -300,7 +300,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseStorageLocation, "SynapseClient-GetSynapseStorageLocation: ErrorMessage {ErrorMessage}", ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseStorageLocation, "SynapseClient-GetSynapseStorageLocation: {ErrorMessage}", ex.Message);
             }
             return location;
         }

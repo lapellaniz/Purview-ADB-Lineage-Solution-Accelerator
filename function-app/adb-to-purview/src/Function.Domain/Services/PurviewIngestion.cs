@@ -465,6 +465,7 @@ namespace Function.Domain.Services
             }
         }
 
+        // TODO Mani 
         private void Log(string type, string msg)
         {
             if (type.ToUpper() == "ERROR")

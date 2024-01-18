@@ -11,6 +11,7 @@ using Azure.Messaging.EventHubs.Producer;
 using Function.Domain.Helpers;
 using Function.Domain.Services;
 using Function.Domain.Providers;
+using Function.Domain.Helpers.Logging;
 
 
 namespace AdbToPurview.Function
@@ -60,9 +61,9 @@ namespace AdbToPurview.Function
                 _logger.LogInformation($"OpenLineageIn: Processing request...");
                 // send event data to EventHub
                 var events = new List<EventData>();
-                
+
                 var strRequest = await req.ReadAsStringAsync();
-                if(string.IsNullOrEmpty(strRequest))
+                if (string.IsNullOrEmpty(strRequest))
                 {
                     throw new Exception("OpenLineageIn: Request is null or empty.");
                 }
@@ -76,6 +77,7 @@ namespace AdbToPurview.Function
                     var jobNamespace = _olFilter.GetJobNamespace(strRequest);
                     if (jobNamespace == "" || jobNamespace == null)
                     {
+                        // TODO Mani
                         _logger.LogError($"No Job Namespace found in event: {strRequest}");
                     }
                     else
@@ -113,7 +115,7 @@ namespace AdbToPurview.Function
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in OpenLineageIn function: {errorMessage}", ex.Message);
+                LoggingExtensions.LogError(_logger, ex, ErrorCodes.OpenLineage.GenericError, "Error in OpenLineageIn function {ErrorMessage}", ex.Message);
                 return _httpHelper.CreateServerErrorHttpResponse(req);
             }
         }

@@ -47,7 +47,7 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.PurviewOut.OlSynapseMessageEnrichment, "OlSynapseMessageEnrichment-EnrichmentEventAsync: ErrorMessage {ErrorMessage}", ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.PurviewOut.OlSynapseMessageEnrichment, "OlSynapseMessageEnrichment-EnrichmentEventAsync {ErrorMessage}", ex.Message);
 
             }
             return olEvent;
