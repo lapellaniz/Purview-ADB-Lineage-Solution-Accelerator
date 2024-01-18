@@ -54,13 +54,16 @@ namespace Function.Domain.Helpers
         }
 
         private async Task<List<IInputsOutputs>> CaptureNameSpaceAsync<T>(HashSet<string> names, string workspaceName)
-    where T : IInputsOutputs, new()
+           where T : IInputsOutputs, new()
         {
-            List<IInputsOutputs> result = new List<IInputsOutputs>();
+            List<IInputsOutputs> result = [];
             foreach (var item in names)
             {
-                var values = item.Split('/');
-                var nameSpace = await _synapseClientProvider.GetSynapseStorageLocation(workspaceName, values[1], values[2]);
+                // The item is in the format of /database/table
+                var values = item.TrimStart('/').Split('/');
+                var databaseName = values[0].Trim();
+                var tableName = values[1].Trim();
+                var nameSpace = await _synapseClientProvider.GetSynapseStorageLocation(workspaceName, databaseName, tableName);
                 if (!string.IsNullOrEmpty(nameSpace))
                 {
                     result.Add(new T() { Name = item, NameSpace = nameSpace });
@@ -68,7 +71,7 @@ namespace Function.Domain.Helpers
                 else
                 {
                     //TODO Mani - both values
-                    LoggingExtensions.LogWarning(_log, ErrorCodes.Warnings.OlSynapseMessageEnrichmentCaptureNameSpace, "OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {database} and table : {table}", values[1], values[2]);
+                    LoggingExtensions.LogWarning(_log, ErrorCodes.Warnings.OlSynapseMessageEnrichmentCaptureNameSpace, "OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {databaseName} and table : {tableName}", databaseName, tableName);
                 }
             }
             return result;
