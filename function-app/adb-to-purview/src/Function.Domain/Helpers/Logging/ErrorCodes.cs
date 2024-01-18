@@ -1,4 +1,4 @@
-namespace Function.Domain.Helpers
+namespace Function.Domain.Helpers.Logging
 {
     public static class ErrorCodes
     {
