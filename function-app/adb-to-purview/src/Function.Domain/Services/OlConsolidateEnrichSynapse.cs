@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Function.Domain.Helpers;
+using Function.Domain.Helpers.Logging;
 using Function.Domain.Helpers.Parser;
 using Function.Domain.Models.OL;
 using Function.Domain.Models.SynapseSpark;
@@ -144,7 +145,7 @@ namespace Function.Domain.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating enriched event for job '{jobId}': {errorMessage}", _event.Job.Name, ex.Message);
+                LoggingExtensions.LogError(_logger, ex, ErrorCodes.PurviewOut.SynapseOlMessageGeneric, "Error creating enriched event for job '{jobId}': {errorMessage}", _event.Job.Name, ex.Message);
                 throw;
             }
         }

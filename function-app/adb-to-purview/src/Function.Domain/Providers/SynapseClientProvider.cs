@@ -16,6 +16,7 @@ using System.Text.Json;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
+using Function.Domain.Helpers.Logging;
 
 namespace Function.Domain.Providers
 {
@@ -117,6 +118,7 @@ namespace Function.Domain.Providers
 
                 if (_bearerToken is null)
                 {
+                    //TODO Mani - for all
                     _log.LogError("SynapseClient-GetSynapseJobAsync: unable to get bearer token");
                     return null;
                 }
@@ -141,7 +143,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"SynapseClient-GetSynapseJobAsync: error, message: {ex.Message}");
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseJob, "SynapseClient-GetSynapseJobAsync: {ErrorMessage}", ex.Message);
             }
             return resultSynapseRoot;
         }
@@ -183,7 +185,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, $"SynapseClient-GetSynapseSparkPoolsAsync: error, message: {ex.Message}");
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseSparkPools, "SynapseClient-GetSynapseSparkPoolsAsync: {ErrorMessage}", ex.Message);
             }
             return resultSynapseSparkPool;
         }
@@ -298,7 +300,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "SynapseClient-GetSynapseStorageLocation: Failed to get storage location for {databaseName} and {tableName}. Endpoint: {endpoint}. ErrorMessage {ErrorMessage} ", databaseName, request.RequestUri, tableName, ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseStorageLocation, "SynapseClient-GetSynapseStorageLocation: Failed to get storage location for {databaseName} and {tableName}. Endpoint: {endpoint}. ErrorMessage {ErrorMessage}", databaseName, tableName, request.RequestUri, ex.Message);
             }
             return location;
         }

@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Function.Domain.Models.OL;
 using System.Linq;
+using Function.Domain.Helpers.Logging;
 
 namespace AdbToPurview.Function
 {
@@ -42,7 +43,7 @@ namespace AdbToPurview.Function
                 {
                     var olSynapseEnrichment = _olEnrichmentFactory.CreateEnrichment<EnrichedSynapseEvent>(OlEnrichmentType.Synapse);
                     var olSynapseEvent = await olSynapseEnrichment.ProcessOlMessage(input);
-                    if(olSynapseEvent == null || olSynapseEvent.OlEvent == null)
+                    if (olSynapseEvent == null || olSynapseEvent.OlEvent == null)
                     {
                         _logger.LogInformation($"Start event, duplicate event, or no context found for Synapse - eventData: {input}");
                         return string.Empty;
@@ -90,7 +91,7 @@ namespace AdbToPurview.Function
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error in PurviewOut function: {errorMessage}", e.Message);
+                LoggingExtensions.LogError(_logger, e, ErrorCodes.PurviewOut.GenericError, "Error in PurviewOut function {ErrorMessage}", e.Message);
                 return $"Error in PurviewOut function: {e.Message}";
             }
         }

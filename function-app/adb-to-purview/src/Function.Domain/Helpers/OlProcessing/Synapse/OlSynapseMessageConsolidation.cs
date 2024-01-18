@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Function.Domain.Helpers.Logging;
 using Function.Domain.Models.OL;
 using Function.Domain.Services;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,7 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "OlSynapseMessageConsolidation-ConsolidateEventAsync: ErrorMessage {ErrorMessage} ", ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.PurviewOut.OlSynapseMessageConsolidation, "OlSynapseMessageConsolidation-ConsolidateEventAsync {ErrorMessage}", ex.Message);
                 throw;
             }
         }

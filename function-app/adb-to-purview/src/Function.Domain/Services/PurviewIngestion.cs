@@ -465,6 +465,7 @@ namespace Function.Domain.Services
             }
         }
 
+        // TODO Mani we have to do for all or ignore
         private void Log(string type, string msg)
         {
             if (type.ToUpper() == "ERROR")

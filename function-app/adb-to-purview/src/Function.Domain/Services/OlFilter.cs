@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Function.Domain.Models.OL;
 using Function.Domain.Helpers.Parser;
+using Function.Domain.Helpers.Logging;
 
 namespace Function.Domain.Services
 {
@@ -35,7 +36,8 @@ namespace Function.Domain.Services
         public bool FilterOlMessage(string strRequest)
         {
             var olEvent = ParseOlEvent(strRequest);
-            try {
+            try
+            {
                 if (olEvent is not null)
                 {
                     var validateEvent = new ValidateOlEvent(_loggerFactory);
@@ -43,8 +45,10 @@ namespace Function.Domain.Services
                 }
                 return false;
             }
-            catch (Exception ex) {
-                _logger.LogError(ex, $"Error during event validation: {strRequest}, error: {ex.Message}");
+            catch (Exception ex)
+            {
+                LoggingExtensions.LogError(_logger, ex, ErrorCodes.OpenLineage.EventValidation, "Error during event validation {strRequest}, {ErrorMessage}", strRequest
+                , ex.Message);
                 return false;
             }
         }
@@ -62,20 +66,26 @@ namespace Function.Domain.Services
 
         private Event? ParseOlEvent(string strEvent)
         {
-            try{
+            try
+            {
                 var trimString = TrimPrefix(strEvent);
                 return JsonConvert.DeserializeObject<Event>(trimString);
             }
-            catch (JsonSerializationException ex) {
-                _logger.LogWarning($"Json Serialization Issue: {strEvent}, error: {ex.Message} path: {ex.Path}");
+            catch (JsonSerializationException ex)
+            {
+                // TODO Mani
+                LoggingExtensions.LogWarning(_logger, ErrorCodes.OpenLineage.JsonSerialization, "Json Serialization Issue: {strEvent}, {ErrorMessage} , {path}", strEvent
+                , ex.Message, ex.Path);
             }
             // Parsing error
-            catch (Exception ex){
-                _logger.LogWarning($"Unrecognized Message: {strEvent}, error: {ex.Message}");
+            catch (Exception ex)
+            {
+                LoggingExtensions.LogWarning(_logger, ErrorCodes.OpenLineage.ParseEvent, "Unrecognized Message: {strEvent}, {ErrorMessage}", strEvent
+            , ex.Message);
             }
             return null;
         }
-        
+
         private string TrimPrefix(string strEvent)
         {
             return strEvent.Substring(strEvent.IndexOf('{')).Trim();

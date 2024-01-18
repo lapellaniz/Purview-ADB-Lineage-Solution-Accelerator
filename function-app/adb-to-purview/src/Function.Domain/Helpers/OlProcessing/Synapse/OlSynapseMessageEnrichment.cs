@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Function.Domain.Helpers.Logging;
 using Function.Domain.Models.OL;
 using Function.Domain.Providers;
 using Microsoft.Extensions.Logging;
@@ -46,7 +47,7 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "OlSynapseMessageEnrichment-EnrichmentEventAsync: ErrorMessage {ErrorMessage} ", ex.Message);
+                LoggingExtensions.LogError(_log, ex, ErrorCodes.PurviewOut.OlSynapseMessageEnrichment, "OlSynapseMessageEnrichment-EnrichmentEventAsync {ErrorMessage}", ex.Message);
             }
             return olEvent;
         }
@@ -68,7 +69,8 @@ namespace Function.Domain.Helpers
                 }
                 else
                 {
-                    _log.LogWarning("OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {databaseName} and table : {tableName}", databaseName, tableName);
+                    //TODO Mani - both values
+                    LoggingExtensions.LogWarning(_log, ErrorCodes.Warnings.OlSynapseMessageEnrichmentCaptureNameSpace, "OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {databaseName} and table : {tableName}", databaseName, tableName);
                 }
             }
             return result;
