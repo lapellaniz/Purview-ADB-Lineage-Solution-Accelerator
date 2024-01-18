@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Function.Domain.Models.OL;
 using System.Linq;
+using Function.Domain.Helpers.Logging;
 
 namespace AdbToPurview.Function
 {
@@ -90,7 +91,7 @@ namespace AdbToPurview.Function
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error in PurviewOut function: {errorMessage}", e.Message);
+                LoggingExtensions.LogError(_logger, e, ErrorCodes.PurviewOut.GenericError, "Error in PurviewOut function: {errorMessage}", e.Message);
                 return $"Error in PurviewOut function: {e.Message}";
             }
         }
