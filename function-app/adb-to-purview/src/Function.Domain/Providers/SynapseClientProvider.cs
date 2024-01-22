@@ -143,7 +143,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseJob, "SynapseClient-GetSynapseJobAsync: {ErrorMessage}", ex.Message);
+                _log.LogError(ex, ErrorCodes.SynapseAPI.GetSynapseJob, "SynapseClient-GetSynapseJobAsync: {ErrorMessage}", ex.Message);
             }
             return resultSynapseRoot;
         }
@@ -185,7 +185,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseSparkPools, "SynapseClient-GetSynapseSparkPoolsAsync: {ErrorMessage}", ex.Message);
+                _log.LogError(ex, ErrorCodes.SynapseAPI.GetSynapseSparkPools, "SynapseClient-GetSynapseSparkPoolsAsync: {ErrorMessage}", ex.Message);
             }
             return resultSynapseSparkPool;
         }
@@ -300,7 +300,7 @@ namespace Function.Domain.Providers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.SynapseAPI.GetSynapseStorageLocation, "SynapseClient-GetSynapseStorageLocation: Failed to get storage location for {databaseName} and {tableName}. Endpoint: {endpoint}. ErrorMessage {ErrorMessage}", databaseName, tableName, request.RequestUri, ex.Message);
+                _log.LogError(ex, ErrorCodes.SynapseAPI.GetSynapseStorageLocation, "SynapseClient-GetSynapseStorageLocation: Failed to get storage location for {databaseName} and {tableName}. Endpoint: {endpoint}. ErrorMessage {ErrorMessage}", databaseName, tableName, request.RequestUri, ex.Message);
             }
             return location;
         }

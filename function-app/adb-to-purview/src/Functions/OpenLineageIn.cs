@@ -115,7 +115,7 @@ namespace AdbToPurview.Function
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_logger, ex, ErrorCodes.OpenLineage.GenericError, "Error in OpenLineageIn function {ErrorMessage}", ex.Message);
+                _logger.LogError(ex, ErrorCodes.OpenLineage.GenericError, "Error in OpenLineageIn function {ErrorMessage}", ex.Message);
                 return _httpHelper.CreateServerErrorHttpResponse(req);
             }
         }

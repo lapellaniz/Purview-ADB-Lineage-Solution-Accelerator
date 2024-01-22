@@ -145,7 +145,7 @@ namespace Function.Domain.Services
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_logger, ex, ErrorCodes.PurviewOut.SynapseOlMessageGeneric, "Error creating enriched event for job '{jobId}': {errorMessage}", _event.Job.Name, ex.Message);
+                _logger.LogError(ex, ErrorCodes.PurviewOut.SynapseOlMessageGeneric, "Error creating enriched event for job '{jobId}': {errorMessage}", _event.Job.Name, ex.Message);
                 throw;
             }
         }

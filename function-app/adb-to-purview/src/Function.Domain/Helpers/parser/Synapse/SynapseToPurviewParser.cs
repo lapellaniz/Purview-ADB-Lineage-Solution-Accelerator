@@ -48,7 +48,7 @@ namespace Function.Domain.Helpers.Parsers.Synapse
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_logger, ex, ErrorCodes.PurviewOut.SynapseToPurviewParser, "SynapseToPurviewParser: Error retrieving ParserSettings.  Please make sure these are configured on your function: {ErrorMessage}", ex.Message);
+                _logger.LogError(ex, ErrorCodes.PurviewOut.SynapseToPurviewParser, "SynapseToPurviewParser: Error retrieving ParserSettings.  Please make sure these are configured on your function: {ErrorMessage}", ex.Message);
                 throw;
             }
 

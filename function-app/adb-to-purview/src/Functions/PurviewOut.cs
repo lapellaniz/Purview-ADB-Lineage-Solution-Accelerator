@@ -91,7 +91,7 @@ namespace AdbToPurview.Function
             }
             catch (Exception e)
             {
-                LoggingExtensions.LogError(_logger, e, ErrorCodes.PurviewOut.GenericError, "Error in PurviewOut function {ErrorMessage}", e.Message);
+                _logger.LogError(e, ErrorCodes.PurviewOut.GenericError, "Error in PurviewOut function {ErrorMessage}", e.Message);
                 return $"Error in PurviewOut function: {e.Message}";
             }
         }

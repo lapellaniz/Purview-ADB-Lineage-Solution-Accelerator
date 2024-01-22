@@ -47,7 +47,7 @@ namespace Function.Domain.Services
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_logger, ex, ErrorCodes.OpenLineage.EventValidation, "Error during event validation {strRequest}, {ErrorMessage}", strRequest
+                _logger.LogError(ex, ErrorCodes.OpenLineage.EventValidation, "Error during event validation {strRequest}, {ErrorMessage}", strRequest
                 , ex.Message);
                 return false;
             }
@@ -74,13 +74,13 @@ namespace Function.Domain.Services
             catch (JsonSerializationException ex)
             {
                 // TODO Mani
-                LoggingExtensions.LogWarning(_logger, ErrorCodes.OpenLineage.JsonSerialization, "Json Serialization Issue: {strEvent}, {ErrorMessage} , {path}", strEvent
+                _logger.LogWarning(ErrorCodes.OpenLineage.JsonSerialization, "Json Serialization Issue: {strEvent}, {ErrorMessage} , {path}", strEvent
                 , ex.Message, ex.Path);
             }
             // Parsing error
             catch (Exception ex)
             {
-                LoggingExtensions.LogWarning(_logger, ErrorCodes.OpenLineage.ParseEvent, "Unrecognized Message: {strEvent}, {ErrorMessage}", strEvent
+                _logger.LogWarning(ErrorCodes.OpenLineage.ParseEvent, "Unrecognized Message: {strEvent}, {ErrorMessage}", strEvent
             , ex.Message);
             }
             return null;

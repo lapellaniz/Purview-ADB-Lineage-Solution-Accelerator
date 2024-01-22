@@ -32,7 +32,7 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.PurviewOut.OlSynapseMessageConsolidation, "OlSynapseMessageConsolidation-ConsolidateEventAsync {ErrorMessage}", ex.Message);
+                _log.LogError(ex, ErrorCodes.PurviewOut.OlSynapseMessageConsolidation, "OlSynapseMessageConsolidation-ConsolidateEventAsync {ErrorMessage}", ex.Message);
                 throw;
             }
         }

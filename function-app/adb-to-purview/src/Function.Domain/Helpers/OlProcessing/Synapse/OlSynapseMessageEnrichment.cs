@@ -47,7 +47,7 @@ namespace Function.Domain.Helpers
             }
             catch (Exception ex)
             {
-                LoggingExtensions.LogError(_log, ex, ErrorCodes.PurviewOut.OlSynapseMessageEnrichment, "OlSynapseMessageEnrichment-EnrichmentEventAsync {ErrorMessage}", ex.Message);
+                _log.LogError(ex, ErrorCodes.PurviewOut.OlSynapseMessageEnrichment, "OlSynapseMessageEnrichment-EnrichmentEventAsync {ErrorMessage}", ex.Message);
             }
             return olEvent;
         }
@@ -70,7 +70,7 @@ namespace Function.Domain.Helpers
                 else
                 {
                     //TODO Mani - both values
-                    LoggingExtensions.LogWarning(_log, ErrorCodes.Warnings.OlSynapseMessageEnrichmentCaptureNameSpace, "OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {databaseName} and table : {tableName}", databaseName, tableName);
+                    _log.LogWarning(ErrorCodes.Warnings.OlSynapseMessageEnrichmentCaptureNameSpace, "OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {databaseName} and table : {tableName}", databaseName, tableName);
                 }
             }
             return result;

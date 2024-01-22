@@ -30,8 +30,7 @@ namespace Function.Domain.Helpers.Logging
         {
             // 300 +
             public const int OlSynapseMessageEnrichmentCaptureNameSpace = 300;   //Generic warning codes
-            public const int Warning2 = 301;   // New unexpected data assets in Purview  TODO Mani
-            public const int Warning3 = 302;   // Missing synapse serverless details
+            public const int Warning2 = 301;   // New unexpected data assets in Purview  TODO Mani Sendtopurview
         }
     }
 }
