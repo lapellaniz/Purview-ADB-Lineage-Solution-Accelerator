@@ -11,6 +11,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Runtime.Caching;
 using Function.Domain.Models.Settings;
+using Function.Domain.Helpers.Logging;
 
 namespace Function.Domain.Services
 {
@@ -82,10 +83,10 @@ namespace Function.Domain.Services
                 return false;
             }
 
-            string ? dataEvent = CalculateHash(entities.ToString());
+            string? dataEvent = CalculateHash(entities.ToString());
             if (!_payLoad.Contains(dataEvent))
             {
-                var cacheItem = new CacheItem(dataEvent, dataEvent);  
+                var cacheItem = new CacheItem(dataEvent, dataEvent);
                 _payLoad.Add(cacheItem, cacheItemPolicy);
 
                 foreach (JObject entity in entities)
@@ -381,7 +382,8 @@ namespace Function.Domain.Services
                         var outputObj = await sourceEntity.QueryInPurview();
                         Process["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
                         if (!entities.ContainsKey(qualifiedName))
-                            entities.Add(qualifiedName, sourceEntity);
+                            _logger.LogWarning(ErrorCodes.Warnings.OlSynapseUnexpectedData, "New entity creation"); // TODO Mani check
+                        entities.Add(qualifiedName, sourceEntity);
                     }
                     else
                     {
