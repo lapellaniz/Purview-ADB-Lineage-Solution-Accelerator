@@ -73,7 +73,6 @@ namespace Function.Domain.Services
             }
             catch (JsonSerializationException ex)
             {
-                // TODO Mani
                 _logger.LogWarning(ErrorCodes.OpenLineage.JsonSerialization, "Json Serialization Issue: {strEvent}, {ErrorMessage} , {path}", strEvent
                 , ex.Message, ex.Path);
             }

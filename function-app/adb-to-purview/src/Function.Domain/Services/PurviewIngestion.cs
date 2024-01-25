@@ -382,8 +382,10 @@ namespace Function.Domain.Services
                         var outputObj = await sourceEntity.QueryInPurview();
                         Process["relationshipAttributes"]![rel!.Name]!["guid"] = sourceEntity.Properties["guid"];
                         if (!entities.ContainsKey(qualifiedName))
-                            _logger.LogWarning(ErrorCodes.Warnings.OlSynapseUnexpectedData, "New entity creation"); // TODO Mani check
-                        entities.Add(qualifiedName, sourceEntity);
+                        {
+                            _logger.LogWarning(ErrorCodes.Warnings.OlSynapseUnexpectedData, "New entity creation {qualifiedName}", qualifiedName);
+                            entities.Add(qualifiedName, sourceEntity);
+                        }
                     }
                     else
                     {
@@ -467,7 +469,6 @@ namespace Function.Domain.Services
             }
         }
 
-        // TODO Mani we have to do for all or ignore
         private void Log(string type, string msg)
         {
             if (type.ToUpper() == "ERROR")

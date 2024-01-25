@@ -69,7 +69,6 @@ namespace Function.Domain.Helpers
                 }
                 else
                 {
-                    //TODO Mani - both values
                     _log.LogWarning(ErrorCodes.Warnings.OlSynapseMessageEnrichmentCaptureNameSpace, "OlSynapseMessageEnrichment-CaptureNameSpaceAsync: Issue with bearer token or storage location not exist for database : {databaseName} and table : {tableName}", databaseName, tableName);
                 }
             }

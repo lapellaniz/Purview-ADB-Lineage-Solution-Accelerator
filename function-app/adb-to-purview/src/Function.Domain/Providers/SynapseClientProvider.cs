@@ -118,7 +118,6 @@ namespace Function.Domain.Providers
 
                 if (_bearerToken is null)
                 {
-                    //TODO Mani - for all
                     _log.LogError("SynapseClient-GetSynapseJobAsync: unable to get bearer token");
                     return null;
                 }

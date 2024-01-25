@@ -77,7 +77,6 @@ namespace AdbToPurview.Function
                     var jobNamespace = _olFilter.GetJobNamespace(strRequest);
                     if (jobNamespace == "" || jobNamespace == null)
                     {
-                        // TODO Mani or ignore?
                         _logger.LogError($"No Job Namespace found in event: {strRequest}");
                     }
                     else
