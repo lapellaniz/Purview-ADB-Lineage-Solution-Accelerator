@@ -1,7 +1,5 @@
 using Function.Domain.Models.Purview;
 using Function.Domain.Models.Adb;
-using Function.Domain.Models.SynapseSpark;
-using Function.Domain.Models.OL;
 
 namespace Function.Domain.Helpers
 {

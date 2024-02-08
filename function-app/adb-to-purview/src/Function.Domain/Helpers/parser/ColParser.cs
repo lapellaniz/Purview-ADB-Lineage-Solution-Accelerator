@@ -46,7 +46,7 @@ namespace Function.Domain.Helpers
                 {
                   var dataSet = new DatasetMappingClass();
                     //dataSet.sink = $"{colId.NameSpace}, {colId.Name}";
-                    dataSet.sink = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name).QualifiedName.ToLower();
+                    dataSet.sink = _qnParser.GetIdentifiers(colId.NameSpace, colId.Name).QualifiedName;
                     var columnLevels = new List<ColumnMappingClass>();
                     foreach (ColumnLineageIdentifierClass colInfo2 in colInfo.Value.inputFields)
                     {
@@ -59,7 +59,7 @@ namespace Function.Domain.Helpers
                                 colInfo2.name = x.Name;
                             }
                         }
-                        dataSet.source = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name).QualifiedName.ToLower();
+                        dataSet.source = _qnParser.GetIdentifiers(colInfo2.nameSpace, colInfo2.name).QualifiedName;
                         //dataSet.source = "*";
                         columnLevel.source = colInfo2.field;
                         columnLevel.sink = colInfo.Key;
